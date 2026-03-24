@@ -161,6 +161,7 @@ const CHILD_TOOLS = [
   },
 ];
 
+// run_subagent: 子代理使用全新的 messages[]，共享文件系统，执行完返回摘要
 async function run_subagent(prompt: string): Promise<string> {
   const subMessages: { role: "user" | "assistant"; content: unknown }[] = [
     { role: "user", content: prompt },
@@ -168,6 +169,7 @@ async function run_subagent(prompt: string): Promise<string> {
 
   let response: any = null;
 
+  // 子代理独立循环，最多 30 轮
   for (let i = 0; i < 30; i++) {
     response = (await client.messages.create({
       model: MODEL,
@@ -209,9 +211,10 @@ async function run_subagent(prompt: string): Promise<string> {
 }
 
 // =============================================================================
-// Parent Tools
+// Parent Tools (s04 新增)
 // =============================================================================
 
+// Parent 工具集 = Child 工具集 + task 工具（用于派生子代理）
 const PARENT_TOOLS = [
   ...CHILD_TOOLS,
   {
@@ -280,6 +283,7 @@ async function agent_loop(messages: Message[]): Promise<void> {
         let output: string;
 
         if (block.name === "task") {
+          // task 工具触发子代理：独立循环运行，完成后返回摘要
           const desc = (block.input as { description?: string }).description || "subtask";
           console.log(`> task (${desc}): ${String((block.input as { prompt: string }).prompt).slice(0, 80)}`);
           output = await run_subagent((block.input as { prompt: string }).prompt);

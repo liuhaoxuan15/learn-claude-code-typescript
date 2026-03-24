@@ -55,6 +55,7 @@ interface TodoItem {
   status: "pending" | "in_progress" | "completed";
 }
 
+// TodoManager：验证规则 - 最多20项、只能一个 in_progress、状态必须合法
 class TodoManager {
   private items: TodoItem[] = [];
 
@@ -311,6 +312,7 @@ async function agent_loop(messages: Message[]): Promise<void> {
       }
     }
 
+    // Nag reminder：如果连续 3 轮没有使用 todo 工具，注入提醒
     rounds_since_todo = used_todo ? 0 : rounds_since_todo + 1;
     if (rounds_since_todo >= 3) {
       results.unshift({ type: "text", text: "<reminder>Update your todos.</reminder>" } as TextBlock);

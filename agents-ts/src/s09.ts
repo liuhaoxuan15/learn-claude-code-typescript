@@ -54,6 +54,7 @@ interface Message {
   [key: string]: unknown;
 }
 
+// MessageBus: 基于 JSONL 文件的异步消息队列，每个 teammate 一个收件箱文件
 class MessageBus {
   private dir: string;
 
@@ -62,6 +63,7 @@ class MessageBus {
     fs.mkdirSync(this.dir, { recursive: true });
   }
 
+  // send: 追加消息到目标收件箱的 JSONL 文件
   send(sender: string, to: string, content: string, msgType = "message", extra?: Record<string, unknown>): string {
     if (!VALID_MSG_TYPES.has(msgType)) {
       return `Error: Invalid type '${msgType}'. Valid: ${Array.from(VALID_MSG_TYPES).join(", ")}`;
@@ -78,6 +80,7 @@ class MessageBus {
     return `Sent ${msgType} to ${to}`;
   }
 
+  // readInbox: 读取并清空收件箱（消费模式）
   readInbox(name: string): Message[] {
     const inboxPath = path.join(this.dir, `${name}.jsonl`);
     if (!fs.existsSync(inboxPath)) return [];
@@ -88,6 +91,7 @@ class MessageBus {
     return messages;
   }
 
+  // broadcast: 向所有队友发送广播消息
   broadcast(sender: string, content: string, teammates: string[]): string {
     let count = 0;
     for (const name of teammates) {
@@ -146,6 +150,7 @@ class TeammateManager {
     return this.config.members.find((m) => m.name === name);
   }
 
+  // spawn: 创建持久化队友（非一次性），运行在独立线程中
   spawn(name: string, role: string, prompt: string): string {
     const member = this.findMember(name);
     if (member) {
@@ -170,6 +175,7 @@ class TeammateManager {
     return `Spawned '${name}' (role: ${role})`;
   }
 
+  // teammateLoop: 队友独立循环 - 每次 LLM 调用前检查收件箱，支持 idle 状态保持
   private async teammateLoop(name: string, role: string, prompt: string): Promise<void> {
     const sysPrompt = `You are '${name}', role: ${role}, at ${WORKDIR}. Use send_message to communicate. Complete your task.`;
     const messages: { role: "user" | "assistant"; content: unknown }[] = [{ role: "user", content: prompt }];
@@ -440,6 +446,7 @@ interface MessageItem {
 // Agent Loop
 // =============================================================================
 
+// agent_loop: 主循环开始时先检查 lead 收件箱，注入队友消息
 async function agent_loop(messages: MessageItem[]): Promise<void> {
   while (true) {
     const inbox = BUS.readInbox("lead");

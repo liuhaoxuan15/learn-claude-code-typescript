@@ -71,6 +71,7 @@ interface Skill {
   path: string;
 }
 
+// SkillLoader: 两层加载 - 目录名作为 skill 名，SKILL.md 的 frontmatter 提取元信息
 class SkillLoader {
   private skills = new Map<string, Skill>();
 
@@ -78,6 +79,7 @@ class SkillLoader {
     this.loadAll(skillsDir);
   }
 
+  // 递归扫描 skillsDir 下的所有 SKILL.md 文件
   private loadAll(skillsDir: string): void {
     if (!fs.existsSync(skillsDir)) return;
 
@@ -98,6 +100,7 @@ class SkillLoader {
     walk(skillsDir);
   }
 
+  // 解析 frontmatter (---...---) 格式的 skill 文件
   private loadFile(filePath: string, defaultName: string): void {
     const text = fs.readFileSync(filePath, "utf-8");
     const match = text.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
@@ -144,6 +147,7 @@ class SkillLoader {
 
 const SKILL_LOADER = new SkillLoader(SKILLS_DIR);
 
+// System Prompt: 只包含 skill 元信息（~100 tokens/skill），按需加载完整内容
 const SYSTEM = `You are a coding agent at ${WORKDIR}.
 Use load_skill to access specialized knowledge before tackling unfamiliar topics.
 

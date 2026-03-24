@@ -126,10 +126,12 @@ interface 团队配置 {
 }
 
 // =============================================================================
-// 请求跟踪器
+// 请求跟踪器 (request_id 关联模式)
 // =============================================================================
 
+// 关闭请求表: request_id -> { target, status }，跟踪关闭协议状态
 const 关闭请求表 = new Map<string, { target: string; status: string }>();
+// 计划请求表: request_id -> { from, plan, status }，跟踪计划审批状态
 const 计划请求表 = new Map<string, { from: string; plan: string; status: string }>();
 const 跟踪锁 = { _lock: false };
 
@@ -240,6 +242,7 @@ class TeammateManager {
     return `Spawned '${name}' (role: ${role})`;
   }
 
+  // teammateLoop: 队友循环，支持 plan_approval 协议和 shutdown_response FSM
   #teammateLoop(name: string, role: string, prompt: string): void {
     const sysPrompt = (
       `You are '${name}', role: ${role}, at ${WORKDIR}. `
@@ -281,6 +284,7 @@ class TeammateManager {
               tool_use_id: block.id,
               content: String(output),
             });
+            // shutdown_response 工具且 approve=true 时，设置退出标志
             if (block.name === "shutdown_response" && block.input.get?.("approve")) {
               shouldExit = true;
             }
@@ -466,6 +470,7 @@ function 编辑文件(filePath: string, oldText: string, newText: string): strin
 // Lead 协议处理器
 // =============================================================================
 
+// 处理关闭请求: 生成 request_id，发送 shutdown_request 消息到队友收件箱
 function 处理关闭请求(teammate: string): string {
   const reqId = crypto.randomUUID().slice(0, 8);
   if (获得锁()) {
@@ -478,6 +483,7 @@ function 处理关闭请求(teammate: string): string {
   return `Shutdown request ${reqId} sent to '${teammate}' (status: pending)`;
 }
 
+// 处理计划审核: 根据 request_id 查找请求，发送批准/拒绝响应
 function 处理计划审核(requestId: string, approve: boolean, feedback = ""): string {
   const req = 计划请求表.get(requestId);
   if (!req) return `Error: Unknown plan request_id '${requestId}'`;
@@ -491,6 +497,7 @@ function 处理计划审核(requestId: string, approve: boolean, feedback = ""):
   return `Plan ${req.status} for '${req.from}'`;
 }
 
+// 检查关闭状态: 用于 lead 查询关闭请求的处理结果
 function 检查关闭状态(requestId: string): string {
   if (获得锁()) {
     const entry = 关闭请求表.get(requestId);

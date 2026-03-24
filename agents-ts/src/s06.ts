@@ -59,13 +59,15 @@ const THRESHOLD = 50000;
 const KEEP_RECENT = 3;
 
 // =============================================================================
-// Compression
+// Compression (三层压缩策略)
 // =============================================================================
 
+// 简化估算：按 JSON 长度 / 4 近似 token 数
 function estimate_tokens(messages: Message[]): number {
   return JSON.stringify(messages).length / 4;
 }
 
+// Layer 1: 微压缩 - 保留最近 3 个 tool_result，过早的替换为 "[Previous: used {tool_name}]"
 function micro_compact(messages: Message[]): void {
   const toolResults: { msgIdx: number; partIdx: number; result: ToolResultBlock }[] = [];
 
@@ -102,6 +104,7 @@ function micro_compact(messages: Message[]): void {
   }
 }
 
+// Layer 2: 自动压缩 - 超出阈值时，将完整对话保存到 .transcripts/，然后用 LLM 摘要替换
 async function auto_compact(messages: Message[]): Promise<Message[]> {
   fs.mkdirSync(TRANSCRIPT_DIR, { recursive: true });
   const transcriptPath = path.join(TRANSCRIPT_DIR, `transcript_${Date.now()}.jsonl`);
@@ -294,6 +297,7 @@ interface Message {
 
 async function agent_loop(messages: Message[]): Promise<void> {
   while (true) {
+    // 每次循环：先微压缩，再检查是否需要自动压缩
     micro_compact(messages);
 
     if (estimate_tokens(messages) > THRESHOLD) {
@@ -345,6 +349,7 @@ async function agent_loop(messages: Message[]): Promise<void> {
 
     messages.push({ role: "user", content: results });
 
+    // Layer 3: 手动压缩 - 模型主动调用 compact 工具触发
     if (manualCompact) {
       console.log("[manual compact]");
       const compacted = await auto_compact(messages);

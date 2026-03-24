@@ -190,6 +190,7 @@ function 编辑文件(filePath: string, oldText: string, newText: string): strin
 // 待办管理器 (s03)
 // =============================================================================
 
+// TodoManager: 短期检查清单，支持 activeForm 显示正在做什么
 class TodoManager {
   private items: 待办项[] = [];
 
@@ -341,6 +342,7 @@ class SkillLoader {
 // 上下文压缩 (s06)
 // =============================================================================
 
+// 三层压缩: 微压缩(每次) -> 自动压缩(阈值触发) -> 手动压缩(工具触发)
 function 估算令牌数(messages: 消息[]): number {
   return JSON.stringify(messages).length / 4;
 }
@@ -474,6 +476,7 @@ class TaskManager {
 // 后台任务管理器 (s08)
 // =============================================================================
 
+// BackgroundManager: 异步非阻塞执行，通过 child_process.spawn 实现，通知队列传递结果
 class BackgroundManager {
   private 任务映射 = new Map<string, 后台任务>();
   private 通知队列: 通知项[] = [];
@@ -519,6 +522,7 @@ class BackgroundManager {
 // 消息总线 (s09)
 // =============================================================================
 
+// MessageBus: 基于 JSONL 文件的异步消息队列，支持 send/readInbox/broadcast
 class MessageBus {
   constructor() {
     fs.mkdirSync(收件箱目录, { recursive: true });
@@ -708,20 +712,23 @@ const 工具定义列表 = [
 ];
 
 // =============================================================================
-// 主循环
+// 主循环 (整合所有机制的完整 agent)
 // =============================================================================
 
 async function 主循环(messages: 消息[]): Promise<void> {
   let 未使用待办轮数 = 0;
 
   while (true) {
+    // 1. 微压缩 (每次)
     微压缩(messages);
 
+    // 2. 检查阈值，触发自动压缩
     if (估算令牌数(messages) > 令牌阈值) {
       console.log("[自动压缩已触发]");
       messages = await 自动压缩(messages);
     }
 
+    // 3. 消耗后台通知队列
     const 通知列表 = 后台实例.消耗();
     if (通知列表.length > 0) {
       const txt = 通知列表.map((n) => `[bg:${n.task_id}] ${n.status}: ${n.result}`).join("\n");
@@ -747,6 +754,7 @@ async function 主循环(messages: 消息[]): Promise<void> {
 
     if (resp.stop_reason !== "tool_use") return;
 
+    // 4. 遍历工具调用，调度到对应的处理器
     const results: 内容块[] = [];
     let 使用了待办 = false;
     let 手动压缩 = false;
@@ -766,6 +774,7 @@ async function 主循环(messages: 消息[]): Promise<void> {
       }
     }
 
+    // 5. Nag reminder: 连续 3 轮未使用 todo 工具且有待办项时注入提醒
     未使用待办轮数 = 使用了待办 ? 0 : 未使用待办轮数 + 1;
     if (待办实例.有待处理项() && 未使用待办轮数 >= 3) {
       results.unshift({ type: "text", text: "<reminder>请更新你的待办列表。</reminder>" } as 文本块);
@@ -773,6 +782,7 @@ async function 主循环(messages: 消息[]): Promise<void> {
 
     messages.push({ role: "user", content: results });
 
+    // 6. 如果模型主动调用了 compress 工具，执行手动压缩
     if (手动压缩) {
       console.log("[手动压缩]");
       messages = await 自动压缩(messages);
@@ -803,6 +813,7 @@ function 启动REPL() {
       return;
     }
 
+    // REPL 命令: /compact 手动压缩, /tasks 查看任务, /team 查看团队, /inbox 查看收件箱
     if (query === "/compact") {
       if (历史记录.length > 0) {
         console.log("[通过 /compact 手动压缩]");

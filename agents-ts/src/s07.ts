@@ -44,9 +44,10 @@ const MODEL = process.env.MODEL_ID || "claude-sonnet-4-6";
 const SYSTEM = `You are a coding agent at ${WORKDIR}. Use task tools to plan and track work.`;
 
 // =============================================================================
-// TaskManager
+// TaskManager (文件持久化 + 依赖图)
 // =============================================================================
 
+// 任务结构：状态、依赖 (blockedBy/blocks)、负责人
 interface Task {
   id: number;
   subject: string;
@@ -57,6 +58,7 @@ interface Task {
   owner: string;
 }
 
+// 每个任务存储为 .tasks/task_{id}.json，实现进程间持久化
 class TaskManager {
   private dir: string;
   private nextId: number;
@@ -88,6 +90,7 @@ class TaskManager {
     );
   }
 
+  // 任务完成时：从所有任务的 blockedBy 中移除它，自动解除依赖
   private clearDependency(completedId: number): void {
     for (const f of fs.readdirSync(this.dir)) {
       if (!f.endsWith(".json")) continue;
@@ -118,6 +121,7 @@ class TaskManager {
     return JSON.stringify(this.load(taskId), null, 2);
   }
 
+  // update: 支持状态变更 + 添加 blockedBy/addBlocks（双向维护依赖关系）
   update(taskId: number, status?: string, addBlockedBy?: number[], addBlocks?: number[]): string {
     const task = this.load(taskId);
 
@@ -127,7 +131,7 @@ class TaskManager {
       }
       task.status = status as Task["status"];
       if (status === "completed") {
-        this.clearDependency(taskId);
+        this.clearDependency(taskId); // 自动解除对该任务的依赖
       }
     }
 

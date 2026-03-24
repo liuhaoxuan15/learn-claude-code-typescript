@@ -41,6 +41,7 @@ const MODEL = process.env.MODEL_ID || "claude-sonnet-4-6";
 // Tool Handlers
 // =============================================================================
 
+// 路径安全检查：防止工具访问 WORKDIR 以外的文件
 function safe_path(p: string): string {
   const resolved = path.resolve(WORKDIR, p);
   const relative = path.relative(WORKDIR, resolved);
@@ -105,9 +106,11 @@ function run_edit(filePath: string, oldText: string, newText: string): string {
 }
 
 // =============================================================================
-// Tool Dispatch Map
+// Tool Dispatch Map (s02 的核心新增)
 // =============================================================================
 
+// 工具调度表：通过名称将工具调用路由到对应的处理函数
+// 关键洞察："循环没变，只是添加了工具"
 type ToolHandler = (params: Record<string, unknown>) => string;
 
 const TOOL_HANDLERS: Record<string, ToolHandler> = {
@@ -186,6 +189,7 @@ interface Message {
 // Agent Loop
 // =============================================================================
 
+// 核心循环：与 s01 相同结构，通过 TOOL_HANDLERS 分发工具调用
 async function agent_loop(messages: Message[]): Promise<void> {
   while (true) {
     const response = (await client.messages.create({
@@ -205,6 +209,7 @@ async function agent_loop(messages: Message[]): Promise<void> {
 
     for (const block of response.content) {
       if (block.type === "tool_use") {
+        // 通过调度表查找处理器，支持未知工具降级
         const handler = TOOL_HANDLERS[block.name];
         const output = handler ? handler(block.input) : `Unknown tool: ${block.name}`;
         console.log(`> ${block.name}: ${String(output).slice(0, 200)}`);

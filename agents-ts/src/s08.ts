@@ -63,10 +63,12 @@ interface Notification {
   result: string;
 }
 
+// BackgroundManager: 异步后台任务 + 通知队列机制
 class BackgroundManager {
   private tasks = new Map<string, BackgroundTask>();
   private notificationQueue: Notification[] = [];
 
+  // run: 立即返回 task_id，任务在后台异步执行，通过通知队列传递结果
   run(command: string): string {
     const taskId = crypto.randomUUID().slice(0, 8);
     this.tasks.set(taskId, { status: "running", result: null, command });
@@ -118,6 +120,7 @@ class BackgroundManager {
     return lines.join("\n") || "No background tasks.";
   }
 
+  // drainNotifications: 在每次 LLM 调用前消耗队列，将后台结果注入对话
   drainNotifications(): Notification[] {
     const notifs = [...this.notificationQueue];
     this.notificationQueue = [];
@@ -291,6 +294,7 @@ interface Message {
 
 async function agent_loop(messages: Message[]): Promise<void> {
   while (true) {
+    // 每次 LLM 调用前：先消耗通知队列，将后台任务结果注入对话
     const notifs = BG.drainNotifications();
     if (notifs.length > 0 && messages.length > 0) {
       const notifText = notifs.map((n) => `[bg:${n.task_id}] ${n.status}: ${n.result}`).join("\n");

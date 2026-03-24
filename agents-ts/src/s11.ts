@@ -187,9 +187,10 @@ class MessageBus {
 const BUS = new MessageBus(INBOX_DIR);
 
 // =============================================================================
-// 任务板扫描
+// 任务板扫描 (自动认领未分配任务)
 // =============================================================================
 
+// 扫描未认领任务: 查找 status=pending 且无 owner 的任务
 function 扫描未认领任务(): 任务[] {
   fs.mkdirSync(TASKS_DIR, { recursive: true });
   const unclaimed: 任务[] = [];
@@ -366,7 +367,10 @@ class TeammateManager {
         }
       }
 
-      // -- IDLE PHASE --
+      // -- IDLE PHASE: 空闲轮询 --
+      // 1. 检查收件箱 (shutdown_request 或新消息 -> 恢复工作)
+      // 2. 扫描任务板 (有未认领任务 -> 自动认领并恢复工作)
+      // 3. 超时 (60s) -> 关闭
       this.#setStatus(name, "idle");
       let resume = false;
       const polls = Math.floor(IDLE_TIMEOUT / Math.max(POLL_INTERVAL, 1));
@@ -399,6 +403,7 @@ class TeammateManager {
             `<auto-claimed>Task #${task.id}: ${task.subject}\n`
             + `${task.description || ""}</auto-claimed>`
           );
+          // 上下文压缩后需要重新注入身份块
           if (messages.length <= 3) {
             messages.unshift(创建身份块(name, role, teamName));
             messages.splice(1, 0, { role: "assistant", content: `I am ${name}. Continuing.` });
@@ -502,6 +507,7 @@ class TeammateManager {
         description: "Signal that you have no more work. Enters idle polling phase.",
         input_schema: { type: "object" as const, properties: {} },
       },
+      // idle 工具: 队友主动调用，从 WORK 阶段切换到 IDLE 阶段开始轮询
       {
         name: "claim_task",
         description: "Claim a task from the task board by ID.",

@@ -75,9 +75,10 @@ interface 消息 {
 }
 
 // =============================================================================
-// 检测 git 仓库根目录
+// 检测 git 仓库根目录 (worktree 需要 git 仓库)
 // =============================================================================
 
+// 检测仓库根: 使用 git rev-parse --show-toplevel 查找 git 仓库根目录
 function 检测仓库根(cwd: string): string | null {
   try {
     const r = child_process.spawnSync("git", ["rev-parse", "--show-toplevel"], {
@@ -289,9 +290,10 @@ class TaskManager {
 }
 
 // =============================================================================
-// WorktreeManager
+// WorktreeManager (git worktree 生命周期管理)
 // =============================================================================
 
+// WorktreeEntry: 记录每个 worktree 的元数据，持久化到 .worktrees/index.json
 interface WorktreeEntry {
   name: string;
   path: string;
@@ -374,6 +376,7 @@ class WorktreeManager {
     }
   }
 
+  // 创建 worktree: 验证名称 -> 发送 before 事件 -> 执行 git worktree add -> 更新 index -> 绑定任务 -> 发送 after 事件
   创建(name: string, taskId?: number, baseRef = "HEAD"): string {
     this.#validateName(name);
     if (this.#find(name)) throw new Error(`Worktree '${name}' already exists in index`);
@@ -479,6 +482,7 @@ class WorktreeManager {
     }
   }
 
+  // 删除 worktree: 发送 before 事件 -> 执行 git worktree remove -> 可选完成任务 -> 更新 index -> 发送 after 事件
   删除(name: string, force = false, completeTask = false): string {
     const wt = this.#find(name);
     if (!wt) return `Error: Unknown worktree '${name}'`;
@@ -534,6 +538,7 @@ class WorktreeManager {
     }
   }
 
+  // 保留 worktree: 标记为 "kept" 状态，不删除但记录生命周期状态
   保留(name: string): string {
     const wt = this.#find(name);
     if (!wt) return `Error: Unknown worktree '${name}'`;

@@ -40,6 +40,7 @@ const MODEL = process.env.MODEL_ID || "claude-sonnet-4-6";
 // Tool Definition & Handler
 // =============================================================================
 
+// 工具定义：告诉 LLM 有哪些工具可用，input_schema 必须与实际函数参数匹配
 const TOOLS = [
   {
     name: "bash",
@@ -54,6 +55,7 @@ const TOOLS = [
   },
 ];
 
+// 工具执行函数：危险命令检查 + 同步执行 + 超时处理
 function run_bash(command: string): string {
   const dangerous = ["rm -rf /", "sudo", "shutdown", "reboot", "> /dev/"];
   if (dangerous.some((d) => command.includes(d))) {
@@ -106,8 +108,11 @@ type ResponseBlock =
 // The Core Pattern: Agent Loop
 // =============================================================================
 
+// 核心不变式 (Invariant): 这个循环结构在所有 session (s01-s12) 中保持不变
+// 1. 调用 LLM  2. 检查 stop_reason  3. 执行工具  4. 追加结果形成闭环
 async function agent_loop(messages: Message[]): Promise<void> {
   while (true) {
+    // Step 1: 调用 LLM，传入消息历史和可用工具
     const response = (await client.messages.create({
       model: MODEL,
       messages: messages as any,
@@ -117,10 +122,12 @@ async function agent_loop(messages: Message[]): Promise<void> {
 
     messages.push({ role: "assistant", content: response.content });
 
+    // Step 2: 检查 stop_reason，如果不是 "tool_use" 说明 Agent 已完成任务
     if (response.stop_reason !== "tool_use") {
       return;
     }
 
+    // Step 3: 遍历工具调用，执行并收集结果
     const results: ContentBlock[] = [];
 
     for (const block of response.content) {
@@ -136,6 +143,7 @@ async function agent_loop(messages: Message[]): Promise<void> {
       }
     }
 
+    // Step 4: 将工具结果作为新用户消息追加，形成闭环，等待下一轮 LLM 调用
     messages.push({ role: "user", content: results });
   }
 }
@@ -154,6 +162,7 @@ const history: Message[] = [];
 
 rl.prompt();
 
+// REPL: 读取用户输入 -> 调用 agent_loop -> 打印最终文本回复
 rl.on("line", async (line) => {
   const query = line.trim();
 
