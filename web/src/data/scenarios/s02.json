@@ -5,7 +5,7 @@
   "steps": [
     {
       "type": "user_message",
-      "content": "在 hello.py 中添加一个名为 greet(name) 的函数",
+      "content": "在 hello.ts 中添加一个名为 greet(name) 的函数",
       "annotation": "用户请求修改代码"
     },
     {
@@ -15,19 +15,19 @@
     },
     {
       "type": "tool_call",
-      "content": "hello.py",
+      "content": "hello.ts",
       "toolName": "read_file",
       "annotation": "专用读工具提供更清晰的文件访问"
     },
     {
       "type": "tool_result",
-      "content": "print(\"Hello, World!\")",
+      "content": "console.log(\"Hello, World!\");",
       "toolName": "read_file",
       "annotation": "文件内容返回给模型"
     },
     {
       "type": "tool_call",
-      "content": "hello.py\n---\ndef greet(name):\n    print(f\"Hello, {name}!\")\n\ngreet(\"World\")",
+      "content": "hello.ts\n---\nfunction greet(name: string): void {\n    console.log(`Hello, ${name}!`);\n}\n\ngreet(\"World\");",
       "toolName": "write_file",
       "annotation": "write_file 替换整个文件内容"
     },
@@ -39,7 +39,7 @@
     },
     {
       "type": "assistant_text",
-      "content": "我已经在 hello.py 中添加了一个接受 name 参数的 greet(name) 函数。",
+      "content": "我已经在 hello.ts 中添加了一个接受 name 参数的 greet(name) 函数。",
       "annotation": "4 个工具优于 1 个：每个工具都有清晰、专注的用途"
     }
   ]

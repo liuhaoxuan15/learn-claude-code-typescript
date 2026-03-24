@@ -5,12 +5,12 @@
   "steps": [
     {
       "type": "user_message",
-      "content": "构建一个全栈应用：前端用 React，后端用 Python，并包含测试",
+      "content": "构建一个全栈应用：前端用 React，后端用 Node.js/TypeScript，并包含测试",
       "annotation": "需要团队协作的大型任务"
     },
     {
       "type": "tool_call",
-      "content": "spawn_teammate(\n  name: \"frontend-dev\",\n  role: \"React specialist\"\n)\nspawn_teammate(\n  name: \"backend-dev\",\n  role: \"Python API specialist\"\n)",
+      "content": "spawn_teammate(\n  name: \"frontend-dev\",\n  role: \"React specialist\"\n)\nspawn_teammate(\n  name: \"backend-dev\",\n  role: \"Node.js/TypeScript API specialist\"\n)",
       "toolName": "teammate_manager",
       "annotation": "与子代理（s04）完成一个任务后死亡不同，队友是持久化的"
     },

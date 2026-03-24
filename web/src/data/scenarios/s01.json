@@ -5,7 +5,7 @@
   "steps": [
     {
       "type": "user_message",
-      "content": "创建一个名为 hello.py 的文件，打印 'Hello, World!'",
+      "content": "创建一个名为 hello.ts 的文件，打印 'Hello, World!'",
       "annotation": "用户向 agent 发送任务"
     },
     {
@@ -15,7 +15,7 @@
     },
     {
       "type": "tool_call",
-      "content": "echo 'print(\"Hello, World!\")' > hello.py",
+      "content": "echo 'console.log(\"Hello, World!\")' > hello.ts",
       "toolName": "bash",
       "annotation": "工具调用：模型生成一条 bash 命令"
     },
@@ -32,7 +32,7 @@
     },
     {
       "type": "tool_call",
-      "content": "cat hello.py",
+      "content": "cat hello.ts",
       "toolName": "bash",
       "annotation": "再次调用 bash 进行验证"
     },
@@ -44,7 +44,7 @@
     },
     {
       "type": "assistant_text",
-      "content": "完成！我已经创建了带有 print 语句的 hello.py。你可以用 `python hello.py` 运行它。",
+      "content": "完成！我已经创建了带有 console.log 语句的 hello.ts。你可以用 `npx ts-node hello.ts` 运行它。",
       "annotation": "stop_reason != 'tool_use' -> 循环中断，agent 回复用户"
     }
   ]

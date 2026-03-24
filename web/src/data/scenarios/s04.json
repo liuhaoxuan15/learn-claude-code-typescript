@@ -15,7 +15,7 @@
     },
     {
       "type": "tool_call",
-      "content": "Write unit tests for calc.py covering all 4 operations and edge cases like division by zero",
+      "content": "Write unit tests for calc.ts covering all 4 operations and edge cases like division by zero",
       "toolName": "task",
       "annotation": "Task 工具派生出一个拥有独立隔离上下文的子代理"
     },
@@ -26,13 +26,13 @@
     },
     {
       "type": "tool_result",
-      "content": "Created test_calc.py with 8 test cases. All passing.",
+      "content": "Created test_calc.ts with 8 test cases. All passing.",
       "toolName": "task",
       "annotation": "子代理完成并向父代理返回摘要"
     },
     {
       "type": "tool_call",
-      "content": "calc.py -> calc/operations.py, calc/cli.py",
+      "content": "calc.ts -> calc/operations.ts, calc/cli.ts",
       "toolName": "write_file",
       "annotation": "父代理继续自己的任务：重构"
     },
@@ -44,7 +44,7 @@
     },
     {
       "type": "assistant_text",
-      "content": "已重构为 calc/operations.py 和 calc/cli.py。测试由子代理编写，全部通过。",
+      "content": "已重构为 calc/operations.ts 和 calc/cli.ts。测试由子代理编写，全部通过。",
       "annotation": "上下文隔离防止任务之间的混淆"
     }
   ]

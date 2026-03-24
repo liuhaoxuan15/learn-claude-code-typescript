@@ -27,7 +27,7 @@
     },
     {
       "type": "tool_call",
-      "content": "worktree_run(name: \"auth-refactor\", command: \"pytest tests/auth -q\")\nworktree_run(name: \"ui-login\", command: \"npm test -- login\")",
+      "content": "worktree_run(name: \"auth-refactor\", command: \"vitest tests/auth -q\")\nworktree_run(name: \"ui-login\", command: \"npm test -- login\")",
       "toolName": "worktree_run",
       "annotation": "在这个教学运行时中，命令通过通道限定的 cwd 路由；其他运行时可能使用会话级目录切换。不变式是明确的执行上下文。"
     },
