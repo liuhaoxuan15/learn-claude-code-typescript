@@ -76,39 +76,38 @@ export default function HomePage() {
             <span className="h-3 w-3 rounded-full bg-red-500/70" />
             <span className="h-3 w-3 rounded-full bg-yellow-500/70" />
             <span className="h-3 w-3 rounded-full bg-green-500/70" />
-            <span className="ml-3 text-xs text-zinc-500">agent_loop.py</span>
+            <span className="ml-3 text-xs text-zinc-500">agent_loop.ts</span>
           </div>
           <pre className="overflow-x-auto p-4 text-sm leading-relaxed">
             <code>
               <span className="text-purple-400">while</span>
               <span className="text-zinc-300"> </span>
-              <span className="text-orange-300">True</span>
-              <span className="text-zinc-500">:</span>
+              <span className="text-orange-300">true</span>
+              <span className="text-zinc-500"> {"{"}</span>
               {"\n"}
-              <span className="text-zinc-300">{"    "}response = client.messages.</span>
+              <span className="text-zinc-300">{"  "}const response = await client.messages.</span>
               <span className="text-blue-400">create</span>
               <span className="text-zinc-500">(</span>
-              <span className="text-zinc-300">messages=</span>
+              <span className="text-zinc-300">{"{"}</span>
               <span className="text-zinc-300">messages</span>
               <span className="text-zinc-500">,</span>
-              <span className="text-zinc-300"> tools=</span>
-              <span className="text-zinc-300">tools</span>
+              <span className="text-zinc-300"> tools</span>
+              <span className="text-zinc-500">{"}"}</span>
               <span className="text-zinc-500">)</span>
               {"\n"}
-              <span className="text-purple-400">{"    "}if</span>
-              <span className="text-zinc-300"> response.stop_reason != </span>
+              <span className="text-purple-400">{"  "}if</span>
+              <span className="text-zinc-300"> (response.stop_reason !== </span>
               <span className="text-green-400">&quot;tool_use&quot;</span>
-              <span className="text-zinc-500">:</span>
+              <span className="text-zinc-500">)</span>
+              <span className="text-zinc-500"> {"{"}</span>
+              <span className="text-purple-400">break</span>
+              <span className="text-zinc-500">{"}"}</span>
               {"\n"}
-              <span className="text-purple-400">{"        "}break</span>
+              <span className="text-purple-400">{"  "}for</span>
+              <span className="text-zinc-300"> (const tool_call of response.content)</span>
+              <span className="text-zinc-500"> {"{"}</span>
               {"\n"}
-              <span className="text-purple-400">{"    "}for</span>
-              <span className="text-zinc-300"> tool_call </span>
-              <span className="text-purple-400">in</span>
-              <span className="text-zinc-300"> response.content</span>
-              <span className="text-zinc-500">:</span>
-              {"\n"}
-              <span className="text-zinc-300">{"        "}result = </span>
+              <span className="text-zinc-300">{"    "}const result = </span>
               <span className="text-blue-400">execute_tool</span>
               <span className="text-zinc-500">(</span>
               <span className="text-zinc-300">tool_call.name</span>
@@ -116,11 +115,13 @@ export default function HomePage() {
               <span className="text-zinc-300"> tool_call.input</span>
               <span className="text-zinc-500">)</span>
               {"\n"}
-              <span className="text-zinc-300">{"        "}messages.</span>
-              <span className="text-blue-400">append</span>
+              <span className="text-zinc-300">{"    "}messages.</span>
+              <span className="text-blue-400">push</span>
               <span className="text-zinc-500">(</span>
               <span className="text-zinc-300">result</span>
               <span className="text-zinc-500">)</span>
+              {"\n"}
+              <span className="text-zinc-500">{"}"}</span>
             </code>
           </pre>
         </div>

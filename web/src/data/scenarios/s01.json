@@ -38,7 +38,7 @@
     },
     {
       "type": "tool_result",
-      "content": "print(\"Hello, World!\")",
+      "content": "console.log(\"Hello, World!\");",
       "toolName": "bash",
       "annotation": "文件内容已确认"
     },
