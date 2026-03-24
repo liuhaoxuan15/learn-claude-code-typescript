@@ -1,2 +1,1 @@
-anthropic>=0.25.0
-python-dotenv>=1.0.0
+TypeScript dependencies are managed in package.json
