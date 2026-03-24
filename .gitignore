@@ -222,6 +222,9 @@ web/out/
 .env*.local
 test_providers.py
 
+# TypeScript agents
+agents-ts/node_modules/
+
 # Internal analysis artifacts (not learning material)
 analysis/
 analysis_progress.md
