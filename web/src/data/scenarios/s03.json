@@ -1,53 +1,53 @@
 {
   "version": "s03",
   "title": "TodoWrite",
-  "description": "Agent creates a visible plan before executing",
+  "description": "Agent 在执行前先创建可见的计划",
   "steps": [
     {
       "type": "user_message",
-      "content": "Build a CLI calculator that supports add, subtract, multiply, divide",
-      "annotation": "A multi-step task that benefits from planning"
+      "content": "构建一个支持加、减、乘、除的 CLI 计算器",
+      "annotation": "一个受益于规划的多步骤任务"
     },
     {
       "type": "tool_call",
       "content": "[\n  { \"id\": 1, \"task\": \"Create calc.py with argument parsing\", \"status\": \"in_progress\" },\n  { \"id\": 2, \"task\": \"Implement 4 operations\", \"status\": \"pending\" },\n  { \"id\": 3, \"task\": \"Add error handling\", \"status\": \"pending\" },\n  { \"id\": 4, \"task\": \"Test all operations\", \"status\": \"pending\" }\n]",
       "toolName": "todo_write",
-      "annotation": "TodoManager creates a visible plan BEFORE any code is written"
+      "annotation": "TodoManager 在任何代码编写之前创建一个可见的计划"
     },
     {
       "type": "tool_result",
       "content": "Todo list created with 4 tasks",
       "toolName": "todo_write",
-      "annotation": "The plan is now visible and trackable"
+      "annotation": "计划现在是可见且可追踪的"
     },
     {
       "type": "tool_call",
       "content": "calc.py\n---\nimport sys\n\ndef calculate(op, a, b):\n    ops = {'+': a+b, '-': a-b, '*': a*b, '/': a/b}\n    return ops.get(op, 'Unknown operator')\n\nif __name__ == '__main__':\n    a, op, b = float(sys.argv[1]), sys.argv[2], float(sys.argv[3])\n    print(calculate(op, a, b))",
       "toolName": "write_file",
-      "annotation": "Executing task #1 and #2: create file with operations"
+      "annotation": "执行任务 #1 和 #2：创建包含运算的文件"
     },
     {
       "type": "tool_result",
       "content": "File written successfully",
       "toolName": "write_file",
-      "annotation": "Code written"
+      "annotation": "代码已写入"
     },
     {
       "type": "tool_call",
       "content": "python calc.py 10 + 5",
       "toolName": "bash",
-      "annotation": "Executing task #4: testing"
+      "annotation": "执行任务 #4：测试"
     },
     {
       "type": "tool_result",
       "content": "15.0",
       "toolName": "bash",
-      "annotation": "Test passes"
+      "annotation": "测试通过"
     },
     {
       "type": "assistant_text",
-      "content": "Calculator built and tested. All 4 operations work correctly.",
-      "annotation": "Visible plans improve task completion by making progress trackable"
+      "content": "计算器已构建并测试完毕。4 个运算都正常工作。",
+      "annotation": "可见的计划通过使进度可追踪来提高任务完成率"
     }
   ]
 }

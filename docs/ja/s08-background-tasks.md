@@ -34,56 +34,73 @@ Agent --[spawn A]--[spawn B]--[other work]----
 
 1. BackgroundManagerがスレッドセーフな通知キューでタスクを追跡する。
 
-```python
-class BackgroundManager:
-    def __init__(self):
-        self.tasks = {}
-        self._notification_queue = []
-        self._lock = threading.Lock()
+```typescript
+class BackgroundManager {
+    private tasks: Record<string, {status: string, command: string}> = {};
+    private _notificationQueue: any[] = [];
+    private _lock = new threading.Lock();
+}
 ```
 
 2. `run()`がデーモンスレッドを開始し、即座にリターンする。
 
-```python
-def run(self, command: str) -> str:
-    task_id = str(uuid.uuid4())[:8]
-    self.tasks[task_id] = {"status": "running", "command": command}
-    thread = threading.Thread(
-        target=self._execute, args=(task_id, command), daemon=True)
-    thread.start()
-    return f"Background task {task_id} started"
+```typescript
+    run(command: string): string {
+        const taskId = uuid.v4().slice(0, 8);
+        this.tasks[taskId] = {"status": "running", command};
+        const thread = new threading.Thread({
+            target: () => this.execute(taskId, command),
+            daemon: true,
+        });
+        thread.start();
+        return `Background task ${taskId} started`;
+    }
 ```
 
 3. サブプロセス完了時に、結果を通知キューへ。
 
-```python
-def _execute(self, task_id, command):
-    try:
-        r = subprocess.run(command, shell=True, cwd=WORKDIR,
-            capture_output=True, text=True, timeout=300)
-        output = (r.stdout + r.stderr).strip()[:50000]
-    except subprocess.TimeoutExpired:
-        output = "Error: Timeout (300s)"
-    with self._lock:
-        self._notification_queue.append({
-            "task_id": task_id, "result": output[:500]})
+```typescript
+    private execute(taskId: string, command: string): void {
+        try {
+            const r = subprocess.run(command, {
+                shell: true,
+                cwd: WORKDIR,
+                capture_output: true,
+                text: true,
+                timeout: 300,
+            });
+            const output = ((r.stdout ?? "") + (r.stderr ?? "")).trim().slice(0, 50000);
+        } catch (e) {
+            const output = "Error: Timeout (300s)";
+        }
+        this._lock.lock();
+        try {
+            this._notificationQueue.push({
+                "task_id": taskId, "result": output.slice(0, 500)});
+        } finally {
+            this._lock.unlock();
+        }
+    }
 ```
 
 4. エージェントループが各LLM呼び出しの前に通知をドレインする。
 
-```python
-def agent_loop(messages: list):
-    while True:
-        notifs = BG.drain_notifications()
-        if notifs:
-            notif_text = "\n".join(
-                f"[bg:{n['task_id']}] {n['result']}" for n in notifs)
-            messages.append({"role": "user",
-                "content": f"<background-results>\n{notif_text}\n"
-                           f"</background-results>"})
-            messages.append({"role": "assistant",
-                "content": "Noted background results."})
-        response = client.messages.create(...)
+```typescript
+function agentLoop(messages: any[]): void {
+    while (true) {
+        const notifs = BG.drainNotifications();
+        if (notifs.length > 0) {
+            const notifText = notifs
+                .map((n: any) => `[bg:${n["task_id"]}] ${n["result"]}`)
+                .join("\n");
+            messages.push({"role": "user",
+                "content": `<background-results>\n${notifText}\n</background-results>`});
+            messages.push({"role": "assistant",
+                "content": "Noted background results."});
+        }
+        const response = client.messages.create({...});
+    }
+}
 ```
 
 ループはシングルスレッドのまま。サブプロセスI/Oだけが並列化される。
@@ -101,7 +118,7 @@ def agent_loop(messages: list):
 
 ```sh
 cd learn-claude-code
-python agents/s08_background_tasks.py
+npx tsx agents-ts/src/s08.ts
 ```
 
 1. `Run "sleep 5 && echo done" in the background, then create a file while it runs`

@@ -25,7 +25,7 @@ The key insight: adding tools does not require changing the loop.
                     tool_result | }                |
                                 +------------------+
 
-The dispatch map is a dict: {tool_name: handler_function}.
+The dispatch map is a record: {tool_name: handler_function}.
 One lookup replaces any if/elif chain.
 ```
 
@@ -33,46 +33,58 @@ One lookup replaces any if/elif chain.
 
 1. Each tool gets a handler function. Path sandboxing prevents workspace escape.
 
-```python
-def safe_path(p: str) -> Path:
-    path = (WORKDIR / p).resolve()
-    if not path.is_relative_to(WORKDIR):
-        raise ValueError(f"Path escapes workspace: {p}")
-    return path
+```typescript
+function safe_path(p: string): string {
+  const resolved = path.resolve(WORKDIR, p);
+  const relative = path.relative(WORKDIR, resolved);
+  if (relative.startsWith("..") || path.isAbsolute(p)) {
+    throw new Error(`Path escapes workspace: ${p}`);
+  }
+  return resolved;
+}
 
-def run_read(path: str, limit: int = None) -> str:
-    text = safe_path(path).read_text()
-    lines = text.splitlines()
-    if limit and limit < len(lines):
-        lines = lines[:limit]
-    return "\n".join(lines)[:50000]
+function run_read(filePath: string, limit?: number): string {
+  try {
+    const lines = fs.readFileSync(safe_path(filePath), "utf-8").split("\n");
+    if (limit && lines.length > limit) {
+      lines.push(`... (${lines.length - limit} more)`);
+    }
+    return lines.join("\n").slice(0, 50000);
+  } catch (e) {
+    return `Error: ${e}`;
+  }
+}
 ```
 
 2. The dispatch map links tool names to handlers.
 
-```python
-TOOL_HANDLERS = {
-    "bash":       lambda **kw: run_bash(kw["command"]),
-    "read_file":  lambda **kw: run_read(kw["path"], kw.get("limit")),
-    "write_file": lambda **kw: run_write(kw["path"], kw["content"]),
-    "edit_file":  lambda **kw: run_edit(kw["path"], kw["old_text"],
-                                        kw["new_text"]),
-}
+```typescript
+type ToolHandler = (params: Record<string, unknown>) => string;
+
+const TOOL_HANDLERS: Record<string, ToolHandler> = {
+  bash: (p) => run_bash(p["command"] as string),
+  read_file: (p) => run_read(p["path"] as string, p["limit"] as number | undefined),
+  write_file: (p) => run_write(p["path"] as string, p["content"] as string),
+  edit_file: (p) => run_edit(p["path"] as string, p["old_text"] as string, p["new_text"] as string),
+};
 ```
 
 3. In the loop, look up the handler by name. The loop body itself is unchanged from s01.
 
-```python
-for block in response.content:
-    if block.type == "tool_use":
-        handler = TOOL_HANDLERS.get(block.name)
-        output = handler(**block.input) if handler \
-            else f"Unknown tool: {block.name}"
-        results.append({
-            "type": "tool_result",
-            "tool_use_id": block.id,
-            "content": output,
-        })
+```typescript
+for (const block of response.content) {
+  if (block.type === "tool_use") {
+    const handler = TOOL_HANDLERS[block.name];
+    const output = handler
+      ? handler(block.input)
+      : `Unknown tool: ${block.name}`;
+    results.push({
+      type: "tool_result",
+      tool_use_id: block.id,
+      content: String(output),
+    });
+  }
+}
 ```
 
 Add a tool = add a handler + add a schema entry. The loop never changes.
@@ -82,7 +94,7 @@ Add a tool = add a handler + add a schema entry. The loop never changes.
 | Component      | Before (s01)       | After (s02)                |
 |----------------|--------------------|----------------------------|
 | Tools          | 1 (bash only)      | 4 (bash, read, write, edit)|
-| Dispatch       | Hardcoded bash call | `TOOL_HANDLERS` dict       |
+| Dispatch       | Hardcoded bash call | `TOOL_HANDLERS` record       |
 | Path safety    | None               | `safe_path()` sandbox      |
 | Agent loop     | Unchanged          | Unchanged                  |
 
@@ -90,10 +102,10 @@ Add a tool = add a handler + add a schema entry. The loop never changes.
 
 ```sh
 cd learn-claude-code
-python agents/s02_tool_use.py
+npx tsx agents-ts/src/s02.ts
 ```
 
 1. `Read the file requirements.txt`
-2. `Create a file called greet.py with a greet(name) function`
-3. `Edit greet.py to add a docstring to the function`
-4. `Read greet.py to verify the edit worked`
+2. `Create a file called greet.ts with a greet(name) function`
+3. `Edit greet.ts to add a docstring to the function`
+4. `Read greet.ts to verify the edit worked`

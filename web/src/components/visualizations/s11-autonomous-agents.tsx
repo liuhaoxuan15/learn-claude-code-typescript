@@ -47,10 +47,10 @@ interface TaskRow {
 }
 
 const INITIAL_TASKS: TaskRow[] = [
-  { id: "T1", name: "Fix auth bug", status: "unclaimed", owner: "-" },
-  { id: "T2", name: "Add rate limiter", status: "unclaimed", owner: "-" },
-  { id: "T3", name: "Write tests", status: "unclaimed", owner: "-" },
-  { id: "T4", name: "Update API docs", status: "unclaimed", owner: "-" },
+  { id: "T1", name: "修复认证 bug", status: "unclaimed", owner: "-" },
+  { id: "T2", name: "添加限流器", status: "unclaimed", owner: "-" },
+  { id: "T3", name: "编写测试", status: "unclaimed", owner: "-" },
+  { id: "T4", name: "更新 API 文档", status: "unclaimed", owner: "-" },
 ];
 
 // Agent positions around the task board (left panel)
@@ -68,14 +68,14 @@ function agentPos(index: number) {
 
 // -- Step definitions --
 const STEPS = [
-  { title: "Self-Governing Agents", desc: "Autonomous agents need no coordinator. They govern themselves with an idle-poll-claim-work cycle." },
-  { title: "Idle Timer", desc: "Each idle agent counts rounds. A timeout triggers self-directed task polling." },
-  { title: "Poll Task Board", desc: "Timeout! The agent reads the task board looking for unclaimed work." },
-  { title: "Claim Task", desc: "The agent writes its name to the task record. Atomic, no conflicts." },
-  { title: "Work", desc: "The agent works on the claimed task using its own agent loop." },
-  { title: "Independent Polling", desc: "Multiple agents poll and claim independently. No central coordinator needed." },
-  { title: "Complete & Reset", desc: "Task done. Agent returns to idle. The cycle repeats." },
-  { title: "Self-Organization", desc: "Three agents, zero coordination overhead. Polling + timeout = emergent organization." },
+  { title: "自我管理的 Agent", desc: "自主 Agent 不需要协调器。它们通过 idle-poll-claim-work 循环自我管理。" },
+  { title: "空闲计时器", desc: "每个空闲 agent 计算轮数。超时触发自我导向的任务轮询。" },
+  { title: "轮询任务板", desc: "超时！Agent 读取任务板寻找未认领的工作。" },
+  { title: "认领任务", desc: "Agent 将其名称写入任务记录。原子性，无冲突。" },
+  { title: "工作", desc: "Agent 使用自己的 agent 循环处理已认领的任务。" },
+  { title: "独立轮询", desc: "多个 agent 独立轮询和认领。不需要中央协调器。" },
+  { title: "完成并重置", desc: "任务完成。Agent 返回空闲。循环重复。" },
+  { title: "自我组织", desc: "三个 agent，零协调开销。轮询 + 超时 = 涌现性组织。" },
 ];
 
 // Per-step state for each agent
@@ -234,13 +234,13 @@ export default function AutonomousAgents({ title }: { title?: string }) {
   return (
     <section className="space-y-4">
       <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-        {title || "Autonomous Agent Cycle"}
+        {title || "自主 Agent 循环"}
       </h2>
       <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900 min-h-[500px]">
         <div className="flex flex-col lg:flex-row gap-4">
           {/* Left panel: spatial view with agents and task board */}
           <div className="flex-1">
-            <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">Spatial View</div>
+            <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">空间视图</div>
             <svg viewBox="0 0 280 240" className="w-full">
               {/* Task board (small table in center) */}
               <rect x={BOARD_CX - 35} y={BOARD_CY - 20} width={70} height={40} rx={4}
@@ -249,7 +249,7 @@ export default function AutonomousAgents({ title }: { title?: string }) {
               <text x={BOARD_CX} y={BOARD_CY - 8} textAnchor="middle" fontSize={7} fontWeight={600}
                 fill={palette.nodeText}
               >
-                Task Board
+                任务板
               </text>
               <text x={BOARD_CX} y={BOARD_CY + 4} textAnchor="middle" fontSize={6} fontFamily="monospace"
                 fill={palette.labelFill}
@@ -337,9 +337,9 @@ export default function AutonomousAgents({ title }: { title?: string }) {
               <table className="w-full text-[10px]">
                 <thead>
                   <tr className="bg-zinc-50 dark:bg-zinc-800">
-                    <th className="px-2 py-1 text-left font-medium text-zinc-500 dark:text-zinc-400">Task</th>
-                    <th className="px-2 py-1 text-left font-medium text-zinc-500 dark:text-zinc-400">Status</th>
-                    <th className="px-2 py-1 text-left font-medium text-zinc-500 dark:text-zinc-400">Owner</th>
+                    <th className="px-2 py-1 text-left font-medium text-zinc-500 dark:text-zinc-400">任务</th>
+                    <th className="px-2 py-1 text-left font-medium text-zinc-500 dark:text-zinc-400">状态</th>
+                    <th className="px-2 py-1 text-left font-medium text-zinc-500 dark:text-zinc-400">负责人</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -367,7 +367,7 @@ export default function AutonomousAgents({ title }: { title?: string }) {
 
           {/* Right panel: FSM state machine diagram */}
           <div className="flex-1">
-            <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">FSM Cycle</div>
+            <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">FSM 循环</div>
             <svg viewBox="0 0 220 220" className="w-full">
               <defs>
                 <marker

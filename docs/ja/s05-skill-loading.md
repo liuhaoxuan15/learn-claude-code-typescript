@@ -47,41 +47,50 @@ skills/
 
 2. SkillLoaderが `SKILL.md` を再帰的に探索し、ディレクトリ名をスキル識別子として使用する。
 
-```python
-class SkillLoader:
-    def __init__(self, skills_dir: Path):
-        self.skills = {}
-        for f in sorted(skills_dir.rglob("SKILL.md")):
-            text = f.read_text()
-            meta, body = self._parse_frontmatter(text)
-            name = meta.get("name", f.parent.name)
-            self.skills[name] = {"meta": meta, "body": body}
+```typescript
+class SkillLoader {
+    private skills: Map<string, {meta: Record<string, string>, body: string}> = new Map();
 
-    def get_descriptions(self) -> str:
-        lines = []
-        for name, skill in self.skills.items():
-            desc = skill["meta"].get("description", "")
-            lines.append(f"  - {name}: {desc}")
-        return "\n".join(lines)
+    constructor(skillsDir: string) {
+        const files = glob.sync("**/SKILL.md", { cwd: skillsDir });
+        for (const f of files.sort()) {
+            const text = fs.readFileSync(f, "utf-8");
+            const { meta, body } = this.parseFrontmatter(text);
+            const name = meta.get("name") ?? path.basename(path.dirname(f));
+            this.skills.set(name, { meta: meta as Record<string, string>, body });
+        }
+    }
 
-    def get_content(self, name: str) -> str:
-        skill = self.skills.get(name)
-        if not skill:
-            return f"Error: Unknown skill '{name}'."
-        return f"<skill name=\"{name}\">\n{skill['body']}\n</skill>"
+    getDescriptions(): string {
+        const lines: string[] = [];
+        for (const [name, skill] of this.skills.entries()) {
+            const desc = skill.meta["description"] ?? "";
+            lines.push(`  - ${name}: ${desc}`);
+        }
+        return lines.join("\n");
+    }
+
+    getContent(name: string): string {
+        const skill = this.skills.get(name);
+        if (!skill) {
+            return `Error: Unknown skill '${name}'.`;
+        }
+        return `<skill name="${name}">\n${skill.body}\n</skill>`;
+    }
+}
 ```
 
 3. 第1層はシステムプロンプトに配置。第2層は通常のツールハンドラ。
 
-```python
-SYSTEM = f"""You are a coding agent at {WORKDIR}.
+```typescript
+const SYSTEM = `You are a coding agent at ${WORKDIR}.
 Skills available:
-{SKILL_LOADER.get_descriptions()}"""
+${SKILL_LOADER.getDescriptions()}`;
 
-TOOL_HANDLERS = {
-    # ...base tools...
-    "load_skill": lambda **kw: SKILL_LOADER.get_content(kw["name"]),
-}
+const TOOL_HANDLERS = {
+    // ...base tools...
+    "load_skill": (p: any) => SKILL_LOADER.getContent(p["name"]),
+};
 ```
 
 モデルはどのスキルが存在するかを知り(低コスト)、関連する時にだけ読み込む(高コスト)。
@@ -92,14 +101,14 @@ TOOL_HANDLERS = {
 |----------------|------------------|----------------------------|
 | Tools          | 5 (base + task)  | 5 (base + load_skill)      |
 | System prompt  | Static string    | + skill descriptions       |
-| Knowledge      | None             | skills/\*/SKILL.md files   |
+| Knowledge      | None             | skills/*/SKILL.md files   |
 | Injection      | None             | Two-layer (system + result)|
 
 ## 試してみる
 
 ```sh
 cd learn-claude-code
-python agents/s05_skill_loading.py
+npx tsx agents-ts/src/s05.ts
 ```
 
 1. `What skills are available?`

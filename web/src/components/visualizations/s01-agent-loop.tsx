@@ -18,12 +18,12 @@ interface FlowNode {
 }
 
 const NODES: FlowNode[] = [
-  { id: "start", label: "Start", x: 160, y: 30, w: 120, h: 40, type: "rect" },
-  { id: "api_call", label: "API Call", x: 160, y: 110, w: 120, h: 40, type: "rect" },
+  { id: "start", label: "开始", x: 160, y: 30, w: 120, h: 40, type: "rect" },
+  { id: "api_call", label: "API 调用", x: 160, y: 110, w: 120, h: 40, type: "rect" },
   { id: "check", label: "stop_reason?", x: 160, y: 200, w: 140, h: 50, type: "diamond" },
-  { id: "execute", label: "Execute Tool", x: 160, y: 300, w: 120, h: 40, type: "rect" },
-  { id: "append", label: "Append Result", x: 160, y: 380, w: 120, h: 40, type: "rect" },
-  { id: "end", label: "Break / Done", x: 380, y: 200, w: 120, h: 40, type: "rect" },
+  { id: "execute", label: "执行工具", x: 160, y: 300, w: 120, h: 40, type: "rect" },
+  { id: "append", label: "追加结果", x: 160, y: 380, w: 120, h: 40, type: "rect" },
+  { id: "end", label: "跳出 / 完成", x: 380, y: 200, w: 120, h: 40, type: "rect" },
 ];
 
 // Edges between nodes (SVG path data computed inline)
@@ -74,27 +74,27 @@ interface MessageBlock {
 
 const MESSAGES_PER_STEP: (MessageBlock | null)[][] = [
   [],
-  [{ role: "user", detail: "Fix the login bug", colorClass: "bg-blue-500 dark:bg-blue-600" }],
+  [{ role: "user", detail: "修复登录 bug", colorClass: "bg-blue-500 dark:bg-blue-600" }],
   [],
   [{ role: "assistant", detail: "tool_use: read_file", colorClass: "bg-zinc-600 dark:bg-zinc-500" }],
-  [{ role: "tool_result", detail: "auth.ts contents...", colorClass: "bg-emerald-500 dark:bg-emerald-600" }],
+  [{ role: "tool_result", detail: "auth.ts 内容...", colorClass: "bg-emerald-500 dark:bg-emerald-600" }],
   [
     { role: "assistant", detail: "tool_use: edit_file", colorClass: "bg-zinc-600 dark:bg-zinc-500" },
-    { role: "tool_result", detail: "file updated", colorClass: "bg-emerald-500 dark:bg-emerald-600" },
+    { role: "tool_result", detail: "文件已更新", colorClass: "bg-emerald-500 dark:bg-emerald-600" },
   ],
-  [{ role: "assistant", detail: "end_turn: Done!", colorClass: "bg-purple-500 dark:bg-purple-600" }],
+  [{ role: "assistant", detail: "end_turn: 完成!", colorClass: "bg-purple-500 dark:bg-purple-600" }],
 ];
 
 // -- Step annotations --
 
 const STEP_INFO = [
-  { title: "The While Loop", desc: "Every agent is a while loop that keeps calling the model until it says 'stop'." },
-  { title: "User Input", desc: "The loop starts when the user sends a message." },
-  { title: "Call the Model", desc: "Send all messages to the LLM. It sees everything and decides what to do." },
-  { title: "stop_reason: tool_use", desc: "The model wants to use a tool. The loop continues." },
-  { title: "Execute & Append", desc: "Run the tool, append the result to messages[]. Feed it back." },
-  { title: "Loop Again", desc: "Same code path, second iteration. The model decides to edit a file." },
-  { title: "stop_reason: end_turn", desc: "The model is done. Loop exits. That's the entire agent." },
+  { title: "While 循环", desc: "每个 Agent 都是一个 while 循环，持续调用模型直到它说'停止'。" },
+  { title: "用户输入", desc: "当用户发送消息时，循环开始。" },
+  { title: "调用模型", desc: "将所有消息发送给 LLM。它能看到一切并决定做什么。" },
+  { title: "stop_reason: tool_use", desc: "模型想要使用工具。循环继续。" },
+  { title: "执行并追加", desc: "运行工具，将结果追加到 messages[]。再喂给模型。" },
+  { title: "再次循环", desc: "相同的代码路径，第二次迭代。模型决定编辑文件。" },
+  { title: "stop_reason: end_turn", desc: "模型完成。循环退出。这就是整个 Agent。" },
 ];
 
 // -- Helpers --
@@ -163,7 +163,7 @@ export default function AgentLoop({ title }: { title?: string }) {
   return (
     <section className="min-h-[500px] space-y-4">
       <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-        {title || "The Agent While-Loop"}
+        {title || "Agent While-Loop 循环"}
       </h2>
 
       <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
@@ -171,7 +171,7 @@ export default function AgentLoop({ title }: { title?: string }) {
           {/* Left panel: SVG Flowchart (60%) */}
           <div className="w-full lg:w-[60%]">
             <div className="mb-2 font-mono text-xs text-zinc-400 dark:text-zinc-500">
-              while (stop_reason === "tool_use")
+              while (stop_reason === "tool_use") // 停止原因为 tool_use 时循环
             </div>
             <svg
               viewBox="0 0 500 440"
@@ -365,7 +365,7 @@ export default function AgentLoop({ title }: { title?: string }) {
                     exit={{ opacity: 0 }}
                     className="py-8 text-center text-xs text-zinc-400 dark:text-zinc-600"
                   >
-                    [ empty ]
+                    [ 空 ]
                   </motion.div>
                 )}
                 {visibleMessages.map((msg, i) => (
@@ -391,7 +391,7 @@ export default function AgentLoop({ title }: { title?: string }) {
               {visibleMessages.length > 0 && (
                 <div className="mt-3 border-t border-zinc-200 pt-2 dark:border-zinc-700">
                   <span className="font-mono text-[10px] text-zinc-400">
-                    length: {visibleMessages.length}
+                    长度: {visibleMessages.length}
                   </span>
                 </div>
               )}

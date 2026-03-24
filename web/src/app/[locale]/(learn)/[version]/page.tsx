@@ -55,20 +55,20 @@ export default async function VersionPage({
           )}
         </div>
         <p className="text-lg text-zinc-500 dark:text-zinc-400">
-          {meta.subtitle}
+          {tSession(version + "_subtitle") || meta.subtitle}
         </p>
         <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-500 dark:text-zinc-400">
           <span className="font-mono">{versionData.loc} LOC</span>
           <span>{versionData.tools.length} {t("tools")}</span>
           {meta.coreAddition && (
             <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs dark:bg-zinc-800">
-              {meta.coreAddition}
+              {tSession(version + "_coreAddition") || meta.coreAddition}
             </span>
           )}
         </div>
         {meta.keyInsight && (
           <blockquote className="border-l-4 border-zinc-300 pl-4 text-sm italic text-zinc-500 dark:border-zinc-600 dark:text-zinc-400">
-            {meta.keyInsight}
+            {tSession(version + "_keyInsight") || meta.keyInsight}
           </blockquote>
         )}
       </header>

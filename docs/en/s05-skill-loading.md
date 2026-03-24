@@ -25,8 +25,8 @@ When model calls load_skill("git"):
 +--------------------------------------+
 | tool_result (Layer 2 -- on demand):  |
 | <skill name="git">                   |
-|   Full git workflow instructions...  |  ~2000 tokens
-|   Step 1: ...                        |
+|   Full git workflow instructions...   |  ~2000 tokens
+|   Step 1: ...                       |
 | </skill>                             |
 +--------------------------------------+
 ```
@@ -40,48 +40,71 @@ Layer 1: skill *names* in system prompt (cheap). Layer 2: full *body* via tool_r
 ```
 skills/
   pdf/
-    SKILL.md       # ---\n name: pdf\n description: Process PDF files\n ---\n ...
+    SKILL.md       # --- name: pdf description: Process PDF files ---
   code-review/
-    SKILL.md       # ---\n name: code-review\n description: Review code\n ---\n ...
+    SKILL.md       # --- name: code-review description: Review code ---
 ```
 
 2. SkillLoader scans for `SKILL.md` files, uses the directory name as the skill identifier.
 
-```python
-class SkillLoader:
-    def __init__(self, skills_dir: Path):
-        self.skills = {}
-        for f in sorted(skills_dir.rglob("SKILL.md")):
-            text = f.read_text()
-            meta, body = self._parse_frontmatter(text)
-            name = meta.get("name", f.parent.name)
-            self.skills[name] = {"meta": meta, "body": body}
+```typescript
+interface SkillMeta {
+  name: string;
+  description: string;
+  [key: string]: string | undefined;
+}
 
-    def get_descriptions(self) -> str:
-        lines = []
-        for name, skill in self.skills.items():
-            desc = skill["meta"].get("description", "")
-            lines.append(f"  - {name}: {desc}")
-        return "\n".join(lines)
+interface Skill {
+  meta: SkillMeta;
+  body: string;
+  path: string;
+}
 
-    def get_content(self, name: str) -> str:
-        skill = self.skills.get(name)
-        if not skill:
-            return f"Error: Unknown skill '{name}'."
-        return f"<skill name=\"{name}\">\n{skill['body']}\n</skill>"
+class SkillLoader {
+  private skills = new Map<string, Skill>();
+
+  constructor(skillsDir: string) {
+    this.loadAll(skillsDir);
+  }
+
+  private loadAll(skillsDir: string): void {
+    if (!fs.existsSync(skillsDir)) return;
+    function walk(dir: string): void {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          const skillPath = path.join(full, "SKILL.md");
+          if (fs.existsSync(skillPath)) {
+            self.loadFile(skillPath, entry.name);
+          } else {
+            walk(full);
+          }
+        }
+      }
+    }
+  }
+
+  getContent(name: string): string {
+    const skill = this.skills.get(name);
+    if (!skill) {
+      return `Error: Unknown skill '${name}'.`;
+    }
+    return `<skill name="${name}">\n${skill.body}\n</skill>`;
+  }
+}
 ```
 
 3. Layer 1 goes into the system prompt. Layer 2 is just another tool handler.
 
-```python
-SYSTEM = f"""You are a coding agent at {WORKDIR}.
+```typescript
+const SYSTEM = `You are a coding agent at ${WORKDIR}.
 Skills available:
-{SKILL_LOADER.get_descriptions()}"""
+${SKILL_LOADER.getDescriptions()}`;
 
-TOOL_HANDLERS = {
-    # ...base tools...
-    "load_skill": lambda **kw: SKILL_LOADER.get_content(kw["name"]),
-}
+const TOOL_HANDLERS: Record<string, ToolHandler> = {
+  // ...base tools...
+  load_skill: (p) => SKILL_LOADER.getContent(p["name"] as string),
+};
 ```
 
 The model learns what skills exist (cheap) and loads them when relevant (expensive).
@@ -92,14 +115,14 @@ The model learns what skills exist (cheap) and loads them when relevant (expensi
 |----------------|------------------|----------------------------|
 | Tools          | 5 (base + task)  | 5 (base + load_skill)      |
 | System prompt  | Static string    | + skill descriptions       |
-| Knowledge      | None             | skills/\*/SKILL.md files   |
+| Knowledge      | None             | skills/*/SKILL.md files   |
 | Injection      | None             | Two-layer (system + result)|
 
 ## Try It
 
 ```sh
 cd learn-claude-code
-python agents/s05_skill_loading.py
+npx tsx agents-ts/src/s05.ts
 ```
 
 1. `What skills are available?`

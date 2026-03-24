@@ -157,39 +157,39 @@ function computeStepState(step: number): StepState {
 
 const STEPS = [
   {
-    title: "Growing Context",
+    title: "增长的上下文",
     description:
-      "The context window holds the conversation. Each API call adds more messages.",
+      "上下文窗口保存对话。每次 API 调用都会添加更多消息。",
   },
   {
-    title: "Context Growing",
+    title: "上下文增长中",
     description:
-      "As the agent works, messages accumulate. The context window fills up.",
+      "当 agent 工作时，消息累积。上下文窗口逐渐填满。",
   },
   {
-    title: "Approaching Limit",
+    title: "接近限制",
     description:
-      "Old tool_results are the biggest consumers. Micro-compact targets these first.",
+      "旧的 tool_results 是最大的消耗者。Micro-compact 首先针对这些。",
   },
   {
-    title: "Stage 1: Micro-Compact",
+    title: "阶段 1: 微观压缩",
     description:
-      "Replace old tool_results with short summaries. Automatic, transparent to the model.",
+      "用简短摘要替换旧的 tool_results。自动执行，对模型透明。",
   },
   {
-    title: "Still Growing",
+    title: "仍在增长",
     description:
-      "Work continues. Context grows again toward the threshold...",
+      "工作继续。上下文再次向阈值增长...",
   },
   {
-    title: "Stage 2: Auto-Compact",
+    title: "阶段 2: 自动压缩",
     description:
-      "Entire conversation summarized into a compact block. Triggered at token threshold.",
+      "整个对话被压缩成一个紧凑块。在 token 阈值时触发。",
   },
   {
-    title: "Stage 3: /compact",
+    title: "阶段 3: /compact",
     description:
-      "User-triggered, most aggressive. Three layers of strategic forgetting enable infinite sessions.",
+      "用户触发，最激进的压缩。三层策略性遗忘实现无限会话。",
   },
 ];
 
@@ -218,7 +218,7 @@ export default function ContextCompact({ title }: { title?: string }) {
   return (
     <section className="space-y-4">
       <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-        {title || "Three-Layer Context Compression"}
+        {title || "三层上下文压缩"}
       </h2>
 
       <div
@@ -229,7 +229,7 @@ export default function ContextCompact({ title }: { title?: string }) {
           {/* Token Window (tall vertical bar on the left) */}
           <div className="flex flex-col items-center">
             <div className="mb-2 font-mono text-[10px] font-semibold text-zinc-500 dark:text-zinc-400">
-              Context Window
+              上下文窗口
             </div>
             <div
               className="relative w-24 overflow-hidden rounded-xl border-2 border-zinc-300 bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800"
@@ -298,7 +298,7 @@ export default function ContextCompact({ title }: { title?: string }) {
             <div>
               <div className="mb-1 flex items-center justify-between">
                 <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                  Token usage
+                  Token 使用量
                 </span>
                 <span className="font-mono text-xs text-zinc-500">
                   {state.tokenCount.toLocaleString()} / {MAX_TOKENS.toLocaleString()}
@@ -339,10 +339,10 @@ export default function ContextCompact({ title }: { title?: string }) {
                   className="mt-3 rounded border border-amber-300 bg-amber-50 px-3 py-2 dark:border-amber-700 dark:bg-amber-900/20"
                 >
                   <div className="text-xs font-semibold text-amber-700 dark:text-amber-300">
-                    tool_results are the largest blocks
+                    tool_results 是最大的块
                   </div>
                   <div className="text-[11px] text-amber-600 dark:text-amber-400">
-                    File contents, command outputs, search results -- each one is thousands of tokens.
+                    文件内容、命令输出、搜索结果 —— 每一个都有数千个 tokens。
                   </div>
                 </motion.div>
               )}
@@ -381,9 +381,9 @@ export default function ContextCompact({ title }: { title?: string }) {
                           ? "text-blue-500 dark:text-blue-400"
                           : "text-emerald-500 dark:text-emerald-400"
                     }`}>
-                      {currentStep === 3 && "Old tool_results shrunk to tiny summaries"}
-                      {currentStep === 5 && "Full conversation compressed to summary block"}
-                      {currentStep === 6 && "Most aggressive compression -- near-empty context"}
+                      {currentStep === 3 && "旧的 tool_results 被压缩成微小摘要"}
+                      {currentStep === 5 && "完整对话被压缩成摘要块"}
+                      {currentStep === 6 && "最激进的压缩 —— 近乎空的上下文"}
                     </div>
                   </div>
                 </motion.div>
@@ -401,28 +401,28 @@ export default function ContextCompact({ title }: { title?: string }) {
                 <div className="flex items-center gap-2 rounded bg-amber-50 px-3 py-1.5 dark:bg-amber-900/10">
                   <div className="h-2 w-2 rounded-full bg-amber-500" />
                   <span className="text-xs text-amber-700 dark:text-amber-300">
-                    Stage 1: Micro -- shrink old tool_results
+                    阶段 1: 微观压缩 —— 缩小旧的 tool_results
                   </span>
                   <span className="ml-auto font-mono text-[10px] text-amber-500">
-                    automatic
+                    自动
                   </span>
                 </div>
                 <div className="flex items-center gap-2 rounded bg-blue-50 px-3 py-1.5 dark:bg-blue-900/10">
                   <div className="h-2 w-2 rounded-full bg-blue-500" />
                   <span className="text-xs text-blue-700 dark:text-blue-300">
-                    Stage 2: Auto -- summarize entire conversation
+                    阶段 2: 自动压缩 —— 总结整个对话
                   </span>
                   <span className="ml-auto font-mono text-[10px] text-blue-500">
-                    at threshold
+                    达到阈值时
                   </span>
                 </div>
                 <div className="flex items-center gap-2 rounded bg-emerald-50 px-3 py-1.5 dark:bg-emerald-900/10">
                   <div className="h-2 w-2 rounded-full bg-emerald-500" />
                   <span className="text-xs text-emerald-700 dark:text-emerald-300">
-                    Stage 3: /compact -- user-triggered, deepest compression
+                    阶段 3: /compact —— 用户触发，最深层压缩
                   </span>
                   <span className="ml-auto font-mono text-[10px] text-emerald-500">
-                    manual
+                    手动
                   </span>
                 </div>
               </motion.div>

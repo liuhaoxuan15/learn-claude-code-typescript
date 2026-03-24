@@ -37,12 +37,12 @@ interface StepState {
 
 const STEPS: StepState[] = [
   {
-    title: "Single Workspace Pain",
-    desc: "Two tasks are active, but both edits would hit one directory and collide.",
+    title: "单一工作空间之痛",
+    desc: "两个任务同时活跃，但两个编辑会落在同一个目录并冲突。",
     op: "task_create x2",
     tasks: [
-      { id: 1, subject: "Auth refactor", status: "in_progress", worktree: "" },
-      { id: 2, subject: "UI login polish", status: "in_progress", worktree: "" },
+      { id: 1, subject: "认证重构", status: "in_progress", worktree: "" },
+      { id: 2, subject: "UI 登录优化", status: "in_progress", worktree: "" },
     ],
     worktrees: [],
     lanes: [
@@ -52,12 +52,12 @@ const STEPS: StepState[] = [
     ],
   },
   {
-    title: "Allocate Lane for Task 1",
-    desc: "Create a worktree lane and associate it with task 1 for clear ownership.",
+    title: "为任务 1 分配通道",
+    desc: "创建一个 worktree 通道并将其与任务 1 关联，以明确所有权。",
     op: "worktree_create(name='auth-refactor', task_id=1)",
     tasks: [
-      { id: 1, subject: "Auth refactor", status: "in_progress", worktree: "auth-refactor" },
-      { id: 2, subject: "UI login polish", status: "in_progress", worktree: "" },
+      { id: 1, subject: "认证重构", status: "in_progress", worktree: "auth-refactor" },
+      { id: 2, subject: "UI 登录优化", status: "in_progress", worktree: "" },
     ],
     worktrees: [
       { name: "auth-refactor", branch: "wt/auth-refactor", task: "#1", state: "active" },
@@ -69,12 +69,12 @@ const STEPS: StepState[] = [
     ],
   },
   {
-    title: "Allocate Lane for Task 2",
-    desc: "Lane creation and task association can be separate. Here task 2 binds after lane creation.",
+    title: "为任务 2 分配通道",
+    desc: "通道创建和任务关联可以是分开的。这里任务 2 在通道创建后绑定。",
     op: "worktree_create(name='ui-login')\ntask_bind_worktree(task_id=2, worktree='ui-login')",
     tasks: [
-      { id: 1, subject: "Auth refactor", status: "in_progress", worktree: "auth-refactor" },
-      { id: 2, subject: "UI login polish", status: "in_progress", worktree: "ui-login" },
+      { id: 1, subject: "认证重构", status: "in_progress", worktree: "auth-refactor" },
+      { id: 2, subject: "UI 登录优化", status: "in_progress", worktree: "ui-login" },
     ],
     worktrees: [
       { name: "auth-refactor", branch: "wt/auth-refactor", task: "#1", state: "active" },
@@ -87,12 +87,12 @@ const STEPS: StepState[] = [
     ],
   },
   {
-    title: "Run Commands in Isolated Lanes",
-    desc: "Each command routes by selected lane directory, not by the shared root.",
+    title: "在隔离通道中运行命令",
+    desc: "每个命令通过选定的通道目录路由，而不是共享根目录。",
     op: "worktree_run('auth-refactor', 'pytest tests/auth -q')",
     tasks: [
-      { id: 1, subject: "Auth refactor", status: "in_progress", worktree: "auth-refactor" },
-      { id: 2, subject: "UI login polish", status: "in_progress", worktree: "ui-login" },
+      { id: 1, subject: "认证重构", status: "in_progress", worktree: "auth-refactor" },
+      { id: 2, subject: "UI 登录优化", status: "in_progress", worktree: "ui-login" },
     ],
     worktrees: [
       { name: "auth-refactor", branch: "wt/auth-refactor", task: "#1", state: "active" },
@@ -105,12 +105,12 @@ const STEPS: StepState[] = [
     ],
   },
   {
-    title: "Keep One Lane, Close Another",
-    desc: "Closeout can mix decisions: keep ui-login active for follow-up, remove auth-refactor and complete task 1.",
+    title: "保留一个通道，关闭另一个",
+    desc: "关闭可以混合决策：保留 ui-login 活跃以供后续使用，移除 auth-refactor 并完成任务 1。",
     op: "worktree_keep('ui-login')\nworktree_remove('auth-refactor', complete_task=true)\nworktree_events(limit=10)",
     tasks: [
-      { id: 1, subject: "Auth refactor", status: "completed", worktree: "" },
-      { id: 2, subject: "UI login polish", status: "in_progress", worktree: "ui-login" },
+      { id: 1, subject: "认证重构", status: "completed", worktree: "" },
+      { id: 2, subject: "UI 登录优化", status: "in_progress", worktree: "ui-login" },
     ],
     worktrees: [
       { name: "auth-refactor", branch: "wt/auth-refactor", task: "#1", state: "removed" },
@@ -123,12 +123,12 @@ const STEPS: StepState[] = [
     ],
   },
   {
-    title: "Isolation + Coordination + Events",
-    desc: "The board tracks shared truth, worktree lanes isolate execution, and events provide auditable side-channel traces.",
+    title: "隔离 + 协调 + 事件",
+    desc: "看板追踪共享事实，worktree 通道隔离执行，事件提供可审计的侧通道追踪。",
     op: "task_list + worktree_list + worktree_events",
     tasks: [
-      { id: 1, subject: "Auth refactor", status: "completed", worktree: "" },
-      { id: 2, subject: "UI login polish", status: "in_progress", worktree: "ui-login" },
+      { id: 1, subject: "认证重构", status: "completed", worktree: "" },
+      { id: 2, subject: "UI 登录优化", status: "in_progress", worktree: "ui-login" },
     ],
     worktrees: [
       { name: "auth-refactor", branch: "wt/auth-refactor", task: "#1", state: "removed" },
@@ -162,7 +162,7 @@ export default function WorktreeTaskIsolation({ title }: { title?: string }) {
   return (
     <section className="min-h-[500px] space-y-4">
       <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-        {title || "Worktree Task Isolation"}
+        {title || "Worktree 任务隔离"}
       </h2>
 
       <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
@@ -173,7 +173,7 @@ export default function WorktreeTaskIsolation({ title }: { title?: string }) {
         <div className="grid gap-3 lg:grid-cols-3">
           <div className="rounded-md border border-zinc-200 dark:border-zinc-700">
             <div className="border-b border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-              Task Board (.tasks)
+              任务看板 (.tasks)
             </div>
             <div className="space-y-2 p-2">
               {step.tasks.map((task) => (
@@ -201,12 +201,12 @@ export default function WorktreeTaskIsolation({ title }: { title?: string }) {
 
           <div className="rounded-md border border-zinc-200 dark:border-zinc-700">
             <div className="border-b border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-              Worktree Index (.worktrees/index.json)
+              Worktree 索引 (.worktrees/index.json)
             </div>
             <div className="space-y-2 p-2">
               {step.worktrees.length === 0 && (
                 <div className="rounded border border-dashed border-zinc-300 px-3 py-4 text-center text-xs text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
-                  no worktrees yet
+                  尚无 worktrees
                 </div>
               )}
               {step.worktrees.map((wt) => (
@@ -227,7 +227,7 @@ export default function WorktreeTaskIsolation({ title }: { title?: string }) {
 
           <div className="rounded-md border border-zinc-200 dark:border-zinc-700">
             <div className="border-b border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-              Execution Lanes
+              执行通道
             </div>
             <div className="space-y-2 p-2">
               {step.lanes.map((lane) => (

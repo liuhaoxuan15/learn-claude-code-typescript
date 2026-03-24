@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { useLocale } from "@/lib/i18n";
+import { useLocale, useTranslations } from "@/lib/i18n";
 import { VERSION_META } from "@/lib/constants";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { LayerBadge } from "@/components/ui/badge";
@@ -19,6 +19,7 @@ interface DiffPageContentProps {
 
 export function DiffPageContent({ version }: DiffPageContentProps) {
   const locale = useLocale();
+  const tSession = useTranslations("sessions");
   const meta = VERSION_META[version];
 
   const { currentVersion, prevVersion, diff } = useMemo(() => {
@@ -166,7 +167,7 @@ export function DiffPageContent({ version }: DiffPageContentProps) {
         <Card className="border-l-4 border-l-red-300 dark:border-l-red-700">
           <CardHeader>
             <CardTitle>{prevMeta?.title || prevVersion.id}</CardTitle>
-            <p className="text-sm text-zinc-500">{prevMeta?.subtitle}</p>
+            <p className="text-sm text-zinc-500">{tSession(prevVersion.id + "_subtitle") || prevMeta?.subtitle}</p>
           </CardHeader>
           <div className="space-y-1 text-sm text-zinc-600 dark:text-zinc-400">
             <p>{prevVersion.loc} LOC</p>
@@ -177,7 +178,7 @@ export function DiffPageContent({ version }: DiffPageContentProps) {
         <Card className="border-l-4 border-l-green-300 dark:border-l-green-700">
           <CardHeader>
             <CardTitle>{meta.title}</CardTitle>
-            <p className="text-sm text-zinc-500">{meta.subtitle}</p>
+            <p className="text-sm text-zinc-500">{tSession(version + "_subtitle") || meta.subtitle}</p>
           </CardHeader>
           <div className="space-y-1 text-sm text-zinc-600 dark:text-zinc-400">
             <p>{currentVersion.loc} LOC</p>

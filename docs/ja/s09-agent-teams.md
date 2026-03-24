@@ -39,67 +39,85 @@ Communication:
 
 1. TeammateManagerがconfig.jsonでチーム名簿を管理する。
 
-```python
-class TeammateManager:
-    def __init__(self, team_dir: Path):
-        self.dir = team_dir
-        self.dir.mkdir(exist_ok=True)
-        self.config_path = self.dir / "config.json"
-        self.config = self._load_config()
-        self.threads = {}
+```typescript
+class TeammateManager {
+    private dir: string;
+    private configPath: string;
+    private config: any;
+    private threads: Record<string, threading.Thread> = {};
+
+    constructor(teamDir: string) {
+        this.dir = teamDir;
+        fs.mkdirSync(teamDir, { recursive: true });
+        this.configPath = path.join(teamDir, "config.json");
+        this.config = this.loadConfig();
+    }
+}
 ```
 
 2. `spawn()`がチームメイトを作成し、そのエージェントループをスレッドで開始する。
 
-```python
-def spawn(self, name: str, role: str, prompt: str) -> str:
-    member = {"name": name, "role": role, "status": "working"}
-    self.config["members"].append(member)
-    self._save_config()
-    thread = threading.Thread(
-        target=self._teammate_loop,
-        args=(name, role, prompt), daemon=True)
-    thread.start()
-    return f"Spawned teammate '{name}' (role: {role})"
+```typescript
+    spawn(name: string, role: string, prompt: string): string {
+        const member = {"name": name, role, "status": "working"};
+        this.config["members"].push(member);
+        this.saveConfig();
+        const thread = new threading.Thread({
+            target: () => this.teammateLoop(name, role, prompt),
+            daemon: true,
+        });
+        thread.start();
+        return `Spawned teammate '${name}' (role: ${role})`;
+    }
 ```
 
 3. MessageBus: 追記専用のJSONLインボックス。`send()`がJSON行を追記し、`read_inbox()`がすべて読み取ってドレインする。
 
-```python
-class MessageBus:
-    def send(self, sender, to, content, msg_type="message", extra=None):
-        msg = {"type": msg_type, "from": sender,
-               "content": content, "timestamp": time.time()}
-        if extra:
-            msg.update(extra)
-        with open(self.dir / f"{to}.jsonl", "a") as f:
-            f.write(json.dumps(msg) + "\n")
+```typescript
+class MessageBus {
+    send(sender: string, to: string, content: string, msgType = "message", extra?: any): void {
+        const msg: any = {"type": msgType, "from": sender,
+               "content": content, "timestamp": Date.now() / 1000};
+        if (extra) {
+            Object.assign(msg, extra);
+        }
+        const f = fs.openSync(path.join(this.dir, `${to}.jsonl`), "a");
+        fs.writeSync(f, JSON.stringify(msg) + "\n");
+        fs.closeSync(f);
+    }
 
-    def read_inbox(self, name):
-        path = self.dir / f"{name}.jsonl"
-        if not path.exists(): return "[]"
-        msgs = [json.loads(l) for l in path.read_text().strip().splitlines() if l]
-        path.write_text("")  # drain
-        return json.dumps(msgs, indent=2)
+    readInbox(name: string): string {
+        const p = path.join(this.dir, `${name}.jsonl`);
+        if (!fs.existsSync(p)) return "[]";
+        const lines = fs.readFileSync(p, "utf-8").trim().split("\n").filter(l => l);
+        const msgs = lines.map(l => JSON.parse(l));
+        fs.writeFileSync(p, "");  // drain
+        return JSON.stringify(msgs, null, 2);
+    }
+}
 ```
 
 4. 各チームメイトは各LLM呼び出しの前にインボックスを確認し、受信メッセージをコンテキストに注入する。
 
-```python
-def _teammate_loop(self, name, role, prompt):
-    messages = [{"role": "user", "content": prompt}]
-    for _ in range(50):
-        inbox = BUS.read_inbox(name)
-        if inbox != "[]":
-            messages.append({"role": "user",
-                "content": f"<inbox>{inbox}</inbox>"})
-            messages.append({"role": "assistant",
-                "content": "Noted inbox messages."})
-        response = client.messages.create(...)
-        if response.stop_reason != "tool_use":
-            break
-        # execute tools, append results...
-    self._find_member(name)["status"] = "idle"
+```typescript
+    private teammateLoop(name: string, role: string, prompt: string): void {
+        const messages = [{"role": "user", "content": prompt}];
+        for (let i = 0; i < 50; i++) {
+            const inbox = BUS.readInbox(name);
+            if (inbox !== "[]") {
+                messages.push({"role": "user",
+                    "content": `<inbox>${inbox}</inbox>`});
+                messages.push({"role": "assistant",
+                    "content": "Noted inbox messages."});
+            }
+            const response = client.messages.create({...});
+            if (response.stop_reason !== "tool_use") {
+                break;
+            }
+            // execute tools, append results...
+        }
+        this.findMember(name)["status"] = "idle";
+    }
 ```
 
 ## s08からの変更点
@@ -117,7 +135,7 @@ def _teammate_loop(self, name, role, prompt):
 
 ```sh
 cd learn-claude-code
-python agents/s09_agent_teams.py
+npx tsx agents-ts/src/s09.ts
 ```
 
 1. `Spawn alice (coder) and bob (tester). Have alice send bob a message.`

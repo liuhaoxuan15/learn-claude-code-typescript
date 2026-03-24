@@ -24,17 +24,17 @@ const REQUEST_ID = "req_abc";
 
 // -- Shutdown protocol step definitions --
 const SHUTDOWN_STEPS = [
-  { title: "Structured Protocols", desc: "Protocols define structured message exchanges with correlated request IDs." },
-  { title: "Shutdown Request", desc: "The leader initiates shutdown. The request_id links the request to its response." },
-  { title: "Teammate Decides", desc: "The teammate can accept or reject. It's not a forced kill -- it's a polite request." },
-  { title: "Approved", desc: "Same request_id in the response. Teammate exits cleanly." },
+  { title: "结构化协议", desc: "协议定义带有关联请求 ID 的结构化消息交换。" },
+  { title: "关闭请求", desc: "leader 发起关闭。request_id 将请求与其响应关联。" },
+  { title: "队友决定", desc: "队友可以接受或拒绝。这不是强制终止 —— 这是一个礼貌的请求。" },
+  { title: "已批准", desc: "响应中包含相同的 request_id。队友干净退出。" },
 ];
 
 // -- Plan approval protocol step definitions --
 const PLAN_STEPS = [
-  { title: "Plan Approval", desc: "Teammates in plan_mode must get approval before implementing changes." },
-  { title: "Submit Plan", desc: "The teammate designs a plan and sends it to the leader for review." },
-  { title: "Leader Reviews", desc: "Leader reviews and approves or rejects with feedback. Same request-response pattern." },
+  { title: "计划审批", desc: "在 plan_mode 中的队友必须在实施变更前获得批准。" },
+  { title: "提交计划", desc: "队友设计一个计划并发送给 leader 审查。" },
+  { title: "Leader 审查", desc: "Leader 审查并批准或拒绝并提供反馈。相同的请求-响应模式。" },
 ];
 
 // Horizontal arrow between lifelines
@@ -203,7 +203,7 @@ export default function TeamProtocols({ title }: { title?: string }) {
   return (
     <section className="space-y-4">
       <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-        {title || "FSM Team Protocols"}
+        {title || "FSM 团队协议"}
       </h2>
       <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900 min-h-[500px]">
         {/* Protocol toggle */}
@@ -216,7 +216,7 @@ export default function TeamProtocols({ title }: { title?: string }) {
                 : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
             }`}
           >
-            Shutdown Protocol
+            关闭协议
           </button>
           <button
             onClick={() => switchProtocol("plan")}
@@ -226,7 +226,7 @@ export default function TeamProtocols({ title }: { title?: string }) {
                 : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
             }`}
           >
-            Plan Approval Protocol
+            计划审批协议
           </button>
         </div>
 
@@ -364,7 +364,7 @@ export default function TeamProtocols({ title }: { title?: string }) {
                       fill="#ef4444"
                       fontWeight={600}
                     >
-                      exit
+                      退出
                     </text>
                   </motion.g>
                 )}
@@ -423,7 +423,7 @@ export default function TeamProtocols({ title }: { title?: string }) {
                       strokeWidth={0.5}
                     />
                     <text x={28} y={ARROW_Y_START + 34} fontSize={6} fontFamily="monospace" fill={palette.nodeText} fontWeight={600}>
-                      Plan:
+                      计划:
                     </text>
                     <text x={28} y={ARROW_Y_START + 44} fontSize={5.5} fontFamily="monospace" fill={palette.labelFill}>
                       1. Add error handler

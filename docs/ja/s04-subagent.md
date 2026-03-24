@@ -30,8 +30,8 @@ Parent context stays clean. Subagent context is discarded.
 
 1. 親に`task`ツールを追加する。子は`task`を除くすべての基本ツールを取得する(再帰的な生成は不可)。
 
-```python
-PARENT_TOOLS = CHILD_TOOLS + [
+```typescript
+const PARENT_TOOLS = [...CHILD_TOOLS,
     {"name": "task",
      "description": "Spawn a subagent with fresh context.",
      "input_schema": {
@@ -44,31 +44,39 @@ PARENT_TOOLS = CHILD_TOOLS + [
 
 2. サブエージェントは`messages=[]`で開始し、自身のループを実行する。最終テキストだけが親に返る。
 
-```python
-def run_subagent(prompt: str) -> str:
-    sub_messages = [{"role": "user", "content": prompt}]
-    for _ in range(30):  # safety limit
-        response = client.messages.create(
-            model=MODEL, system=SUBAGENT_SYSTEM,
-            messages=sub_messages,
-            tools=CHILD_TOOLS, max_tokens=8000,
-        )
-        sub_messages.append({"role": "assistant",
-                             "content": response.content})
-        if response.stop_reason != "tool_use":
-            break
-        results = []
-        for block in response.content:
-            if block.type == "tool_use":
-                handler = TOOL_HANDLERS.get(block.name)
-                output = handler(**block.input)
-                results.append({"type": "tool_result",
+```typescript
+function runSubagent(prompt: string): string {
+    const subMessages = [{"role": "user", "content": prompt}];
+    for (let i = 0; i < 30; i++) {  // safety limit
+        const response = client.messages.create({
+            model: MODEL,
+            system: SUBAGENT_SYSTEM,
+            messages: subMessages,
+            tools: CHILD_TOOLS,
+            max_tokens: 8000,
+        });
+        subMessages.push({"role": "assistant",
+                           "content": response.content});
+        if (response.stop_reason !== "tool_use") {
+            break;
+        }
+        const results = [];
+        for (const block of response.content) {
+            if (block.type === "tool_use") {
+                const handler = TOOL_HANDLERS.get(block.name);
+                const output = handler!(block.input);
+                results.push({"type": "tool_result",
                     "tool_use_id": block.id,
-                    "content": str(output)[:50000]})
-        sub_messages.append({"role": "user", "content": results})
-    return "".join(
-        b.text for b in response.content if hasattr(b, "text")
-    ) or "(no summary)"
+                    "content": String(output).slice(0, 50000)});
+            }
+        }
+        subMessages.push({"role": "user", "content": results});
+    }
+    const texts = response.content
+        .filter((b: any) => b.text !== undefined)
+        .map((b: any) => b.text);
+    return texts.join("") || "(no summary)";
+}
 ```
 
 子のメッセージ履歴全体(30回以上のツール呼び出し)は破棄される。親は1段落の要約を通常の`tool_result`として受け取る。
@@ -79,14 +87,14 @@ def run_subagent(prompt: str) -> str:
 |----------------|------------------|---------------------------|
 | Tools          | 5                | 5 (base) + task (parent)  |
 | Context        | Single shared    | Parent + child isolation  |
-| Subagent       | None             | `run_subagent()` function |
+| Subagent       | None             | `runSubagent()` function |
 | Return value   | N/A              | Summary text only         |
 
 ## 試してみる
 
 ```sh
 cd learn-claude-code
-python agents/s04_subagent.py
+npx tsx agents-ts/src/s04.ts
 ```
 
 1. `Use a subtask to find what testing framework this project uses`

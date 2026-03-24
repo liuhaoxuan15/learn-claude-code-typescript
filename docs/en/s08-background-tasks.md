@@ -8,7 +8,7 @@
 
 ## Problem
 
-Some commands take minutes: `npm install`, `pytest`, `docker build`. With a blocking loop, the model sits idle waiting. If the user asks "install dependencies and while that runs, create the config file," the agent does them sequentially, not in parallel.
+Some commands take minutes: `npm install`, `jest`, `docker build`. With a blocking loop, the model sits idle waiting. If the user asks "install dependencies and while that runs, create the config file," the agent does them sequentially, not in parallel.
 
 ## Solution
 
@@ -32,58 +32,60 @@ Agent --[spawn A]--[spawn B]--[other work]----
 
 ## How It Works
 
-1. BackgroundManager tracks tasks with a thread-safe notification queue.
+1. BackgroundManager tracks tasks with a notification queue.
 
-```python
-class BackgroundManager:
-    def __init__(self):
-        self.tasks = {}
-        self._notification_queue = []
-        self._lock = threading.Lock()
+```typescript
+interface BackgroundTask {
+  status: "running" | "completed" | "error" | "timeout";
+  result: string | null;
+  command: string;
+}
+
+interface Notification {
+  task_id: string;
+  status: string;
+  command: string;
+  result: string;
+}
+
+class BackgroundManager {
+  private tasks = new Map<string, BackgroundTask>();
+  private notificationQueue: Notification[] = [];
+
+  run(command: string): string {
+    const taskId = crypto.randomUUID().slice(0, 8);
+    this.tasks.set(taskId, { status: "running", result: null, command });
+    setTimeout(() => this.execute(taskId, command), 0);
+    return `Background task ${taskId} started: ${command.slice(0, 80)}`;
+  }
+
+  drainNotifications(): Notification[] {
+    const notifs = [...this.notificationQueue];
+    this.notificationQueue = [];
+    return notifs;
+  }
+}
 ```
 
-2. `run()` starts a daemon thread and returns immediately.
+2. The agent loop drains notifications before each LLM call.
 
-```python
-def run(self, command: str) -> str:
-    task_id = str(uuid.uuid4())[:8]
-    self.tasks[task_id] = {"status": "running", "command": command}
-    thread = threading.Thread(
-        target=self._execute, args=(task_id, command), daemon=True)
-    thread.start()
-    return f"Background task {task_id} started"
-```
-
-3. When the subprocess finishes, its result goes into the notification queue.
-
-```python
-def _execute(self, task_id, command):
-    try:
-        r = subprocess.run(command, shell=True, cwd=WORKDIR,
-            capture_output=True, text=True, timeout=300)
-        output = (r.stdout + r.stderr).strip()[:50000]
-    except subprocess.TimeoutExpired:
-        output = "Error: Timeout (300s)"
-    with self._lock:
-        self._notification_queue.append({
-            "task_id": task_id, "result": output[:500]})
-```
-
-4. The agent loop drains notifications before each LLM call.
-
-```python
-def agent_loop(messages: list):
-    while True:
-        notifs = BG.drain_notifications()
-        if notifs:
-            notif_text = "\n".join(
-                f"[bg:{n['task_id']}] {n['result']}" for n in notifs)
-            messages.append({"role": "user",
-                "content": f"<background-results>\n{notif_text}\n"
-                           f"</background-results>"})
-            messages.append({"role": "assistant",
-                "content": "Noted background results."})
-        response = client.messages.create(...)
+```typescript
+async function agent_loop(messages: Message[]): Promise<void> {
+  while (true) {
+    const notifs = BG.drainNotifications();
+    if (notifs.length > 0 && messages.length > 0) {
+      const notifText = notifs.map(
+        (n) => `[bg:${n.task_id}] ${n.status}: ${n.result}`
+      ).join("\n");
+      messages.push({
+        role: "user",
+        content: `<background-results>\n${notifText}\n</background-results>`,
+      });
+      messages.push({ role: "assistant", content: "Noted background results." });
+    }
+    const response = await client.messages.create(...);
+  }
+}
 ```
 
 The loop stays single-threaded. Only subprocess I/O is parallelized.
@@ -95,15 +97,15 @@ The loop stays single-threaded. Only subprocess I/O is parallelized.
 | Tools          | 8                | 6 (base + background_run + check)|
 | Execution      | Blocking only    | Blocking + background threads|
 | Notification   | None             | Queue drained per loop     |
-| Concurrency    | None             | Daemon threads             |
+| Concurrency    | None             | setTimeout for parallelism |
 
 ## Try It
 
 ```sh
 cd learn-claude-code
-python agents/s08_background_tasks.py
+npx tsx agents-ts/src/s08.ts
 ```
 
 1. `Run "sleep 5 && echo done" in the background, then create a file while it runs`
 2. `Start 3 background tasks: "sleep 2", "sleep 4", "sleep 6". Check their status.`
-3. `Run pytest in the background and keep working on other things`
+3. `Run jest in the background and keep working on other things`

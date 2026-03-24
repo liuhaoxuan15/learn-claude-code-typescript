@@ -36,41 +36,59 @@ On multi-step tasks, the model loses track. It repeats work, skips steps, or wan
 
 1. TodoManager stores items with statuses. Only one item can be `in_progress` at a time.
 
-```python
-class TodoManager:
-    def update(self, items: list) -> str:
-        validated, in_progress_count = [], 0
-        for item in items:
-            status = item.get("status", "pending")
-            if status == "in_progress":
-                in_progress_count += 1
-            validated.append({"id": item["id"], "text": item["text"],
-                              "status": status})
-        if in_progress_count > 1:
-            raise ValueError("Only one task can be in_progress")
-        self.items = validated
-        return self.render()
+```typescript
+interface TodoItem {
+  id: number;
+  text: string;
+  status: "pending" | "in_progress" | "completed";
+}
+
+class TodoManager {
+  private items: TodoItem[] = [];
+  private nextId = 1;
+
+  update(items: TodoItem[]): string {
+    let inProgressCount = 0;
+    const validated: TodoItem[] = [];
+
+    for (const item of items) {
+      if (item.status === "in_progress") {
+        inProgressCount++;
+      }
+      validated.push({ id: item.id, text: item.text, status: item.status });
+    }
+
+    if (inProgressCount > 1) {
+      throw new Error("Only one task can be in_progress");
+    }
+
+    this.items = validated;
+    return this.render();
+  }
+}
 ```
 
 2. The `todo` tool goes into the dispatch map like any other tool.
 
-```python
-TOOL_HANDLERS = {
-    # ...base tools...
-    "todo": lambda **kw: TODO.update(kw["items"]),
-}
+```typescript
+const TOOL_HANDLERS: Record<string, ToolHandler> = {
+  // ...base tools...
+  todo: (p) => TODO.update(p["items"] as TodoItem[]),
+};
 ```
 
 3. A nag reminder injects a nudge if the model goes 3+ rounds without calling `todo`.
 
-```python
-if rounds_since_todo >= 3 and messages:
-    last = messages[-1]
-    if last["role"] == "user" and isinstance(last.get("content"), list):
-        last["content"].insert(0, {
-            "type": "text",
-            "text": "<reminder>Update your todos.</reminder>",
-        })
+```typescript
+if (roundsSinceTodo >= 3 && messages.length > 0) {
+  const last = messages[messages.length - 1];
+  if (last.role === "user" && Array.isArray(last.content)) {
+    last.content.unshift({
+      type: "text",
+      text: "<reminder>Update your todos.</reminder>",
+    });
+  }
+}
 ```
 
 The "one in_progress at a time" constraint forces sequential focus. The nag reminder creates accountability.
@@ -82,15 +100,15 @@ The "one in_progress at a time" constraint forces sequential focus. The nag remi
 | Tools          | 4                | 5 (+todo)                  |
 | Planning       | None             | TodoManager with statuses  |
 | Nag injection  | None             | `<reminder>` after 3 rounds|
-| Agent loop     | Simple dispatch  | + rounds_since_todo counter|
+| Agent loop     | Simple dispatch  | + roundsSinceTodo counter  |
 
 ## Try It
 
 ```sh
 cd learn-claude-code
-python agents/s03_todo_write.py
+npx tsx agents-ts/src/s03.ts
 ```
 
-1. `Refactor the file hello.py: add type hints, docstrings, and a main guard`
-2. `Create a Python package with __init__.py, utils.py, and tests/test_utils.py`
-3. `Review all Python files and fix any style issues`
+1. `Refactor the file hello.ts: add type hints, docstrings, and a main guard`
+2. `Create a TypeScript package with index.ts, utils.ts, and tests/test_utils.ts`
+3. `Review all TypeScript files and fix any style issues`

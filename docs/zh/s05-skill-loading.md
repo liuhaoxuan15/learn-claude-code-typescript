@@ -40,48 +40,71 @@ When model calls load_skill("git"):
 ```
 skills/
   pdf/
-    SKILL.md       # ---\n name: pdf\n description: Process PDF files\n ---\n ...
+    SKILL.md       # --- name: pdf description: Process PDF files ---
   code-review/
-    SKILL.md       # ---\n name: code-review\n description: Review code\n ---\n ...
+    SKILL.md       # --- name: code-review description: Review code ---
 ```
 
 2. SkillLoader 递归扫描 `SKILL.md` 文件, 用目录名作为技能标识。
 
-```python
-class SkillLoader:
-    def __init__(self, skills_dir: Path):
-        self.skills = {}
-        for f in sorted(skills_dir.rglob("SKILL.md")):
-            text = f.read_text()
-            meta, body = self._parse_frontmatter(text)
-            name = meta.get("name", f.parent.name)
-            self.skills[name] = {"meta": meta, "body": body}
+```typescript
+interface SkillMeta {
+  name: string;
+  description: string;
+  [key: string]: string | undefined;
+}
 
-    def get_descriptions(self) -> str:
-        lines = []
-        for name, skill in self.skills.items():
-            desc = skill["meta"].get("description", "")
-            lines.append(f"  - {name}: {desc}")
-        return "\n".join(lines)
+interface Skill {
+  meta: SkillMeta;
+  body: string;
+  path: string;
+}
 
-    def get_content(self, name: str) -> str:
-        skill = self.skills.get(name)
-        if not skill:
-            return f"Error: Unknown skill '{name}'."
-        return f"<skill name=\"{name}\">\n{skill['body']}\n</skill>"
+class SkillLoader {
+  private skills = new Map<string, Skill>();
+
+  constructor(skillsDir: string) {
+    this.loadAll(skillsDir);
+  }
+
+  private loadAll(skillsDir: string): void {
+    if (!fs.existsSync(skillsDir)) return;
+    function walk(dir: string): void {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          const skillPath = path.join(full, "SKILL.md");
+          if (fs.existsSync(skillPath)) {
+            self.loadFile(skillPath, entry.name);
+          } else {
+            walk(full);
+          }
+        }
+      }
+    }
+  }
+
+  getContent(name: string): string {
+    const skill = this.skills.get(name);
+    if (!skill) {
+      return `Error: Unknown skill '${name}'.`;
+    }
+    return `<skill name="${name}">\n${skill.body}\n</skill>`;
+  }
+}
 ```
 
 3. 第一层写入系统提示。第二层不过是 dispatch map 中的又一个工具。
 
-```python
-SYSTEM = f"""You are a coding agent at {WORKDIR}.
+```typescript
+const SYSTEM = `You are a coding agent at ${WORKDIR}.
 Skills available:
-{SKILL_LOADER.get_descriptions()}"""
+${SKILL_LOADER.getDescriptions()}`;
 
-TOOL_HANDLERS = {
-    # ...base tools...
-    "load_skill": lambda **kw: SKILL_LOADER.get_content(kw["name"]),
-}
+const TOOL_HANDLERS: Record<string, ToolHandler> = {
+  // ...base tools...
+  load_skill: (p) => SKILL_LOADER.getContent(p["name"] as string),
+};
 ```
 
 模型知道有哪些技能 (便宜), 需要时再加载完整内容 (贵)。
@@ -92,14 +115,14 @@ TOOL_HANDLERS = {
 |----------------|------------------|--------------------------------|
 | Tools          | 5 (基础 + task)  | 5 (基础 + load_skill)          |
 | 系统提示       | 静态字符串       | + 技能描述列表                 |
-| 知识库         | 无               | skills/\*/SKILL.md 文件        |
+| 知识库         | 无               | skills/*/SKILL.md 文件        |
 | 注入方式       | 无               | 两层 (系统提示 + result)       |
 
 ## 试一试
 
 ```sh
 cd learn-claude-code
-python agents/s05_skill_loading.py
+npx tsx agents-ts/src/s05.ts
 ```
 
 试试这些 prompt (英文 prompt 对 LLM 效果更好, 也可以用中文):

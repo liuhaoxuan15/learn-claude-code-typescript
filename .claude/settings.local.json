@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)",
+      "Bash(node -e \"const fs = require\\(''fs''\\); fs.writeFileSync\\(''/tmp/test.txt'', ''hello'', ''utf-8''\\); console.log\\(''ok''\\)\")",
+      "Bash(node -e \"const t = require\\(''''./node_modules/@types/node/fs''''\\).writeFileSync; console.log\\(t.toString\\(\\).slice\\(0, 200\\)\\)\")",
+      "Bash(node --check src/s_full.ts)",
+      "Bash(npx tsx:*)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(npm run:*)",
+      "Bash(sed -n '455,462p' src/s10.ts)",
+      "Bash(sed -n '586,592p' src/s11.ts)",
+      "Bash(sed -n '625,631p' src/s12.ts)",
+      "Bash(awk 'NR==458' src/s10.ts)",
+      "Bash(awk 'NR==589' src/s11.ts)",
+      "Bash(for f:*)",
+      "Bash(do sed:*)",
+      "Bash(done)",
+      "Bash(node -e \"const v = require\\(''./src/data/generated/versions.json''\\); console.log\\(v.versions.map\\(x => \\({id: x.id, filename: x.filename, loc: x.loc, tools: x.tools.length}\\)\\)\\)\")",
+      "Bash(node -e \"const v = require\\(''./src/data/generated/versions.json''\\); const s01 = v.versions.find\\(x => x.id === ''s01''\\); console.log\\(''First 200 chars of source:'', s01.source.slice\\(0, 200\\)\\)\")",
+      "Bash(npx playwright:*)",
+      "Bash(node e2e-test.mjs)",
+      "Bash(node e2e-pages.mjs)",
+      "Bash(git add:*)"
+    ]
+  }
+}

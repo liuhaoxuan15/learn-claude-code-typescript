@@ -46,59 +46,76 @@ continue    [Layer 2: auto_compact]
 
 1. **第1層 -- micro_compact**: 各LLM呼び出しの前に、古いツール結果をプレースホルダーに置換する。
 
-```python
-def micro_compact(messages: list) -> list:
-    tool_results = []
-    for i, msg in enumerate(messages):
-        if msg["role"] == "user" and isinstance(msg.get("content"), list):
-            for j, part in enumerate(msg["content"]):
-                if isinstance(part, dict) and part.get("type") == "tool_result":
-                    tool_results.append((i, j, part))
-    if len(tool_results) <= KEEP_RECENT:
-        return messages
-    for _, _, part in tool_results[:-KEEP_RECENT]:
-        if len(part.get("content", "")) > 100:
-            part["content"] = f"[Previous: used {tool_name}]"
-    return messages
+```typescript
+function microCompact(messages: any[]): any[] {
+    const toolResults: [number, number, any][] = [];
+    for (let i = 0; i < messages.length; i++) {
+        const msg = messages[i];
+        if (msg["role"] === "user" && Array.isArray(msg.get("content"))) {
+            for (let j = 0; j < msg["content"].length; j++) {
+                const part = msg["content"][j];
+                if (typeof part === "object" && part?.get("type") === "tool_result") {
+                    toolResults.push([i, j, part]);
+                }
+            }
+        }
+    }
+    if (toolResults.length <= KEEP_RECENT) {
+        return messages;
+    }
+    for (const [,, part] of toolResults.slice(0, -KEEP_RECENT)) {
+        if ((part.get("content") ?? "").length > 100) {
+            part["content"] = `[Previous: used ${toolName}]`;
+        }
+    }
+    return messages;
+}
 ```
 
 2. **第2層 -- auto_compact**: トークンが閾値を超えたら、完全なトランスクリプトをディスクに保存し、LLMに要約を依頼する。
 
-```python
-def auto_compact(messages: list) -> list:
-    # Save transcript for recovery
-    transcript_path = TRANSCRIPT_DIR / f"transcript_{int(time.time())}.jsonl"
-    with open(transcript_path, "w") as f:
-        for msg in messages:
-            f.write(json.dumps(msg, default=str) + "\n")
-    # LLM summarizes
-    response = client.messages.create(
-        model=MODEL,
-        messages=[{"role": "user", "content":
+```typescript
+function autoCompact(messages: any[]): any[] {
+    // Save transcript for recovery
+    const transcriptPath = path.join(TRANSCRIPT_DIR, `transcript_${Date.now()}.jsonl`);
+    const f = fs.openSync(transcriptPath, "w");
+    for (const msg of messages) {
+        fs.writeSync(f, JSON.stringify(msg, (_, v) => v === undefined ? null : v) + "\n");
+    }
+    fs.closeSync(f);
+    // LLM summarizes
+    const response = client.messages.create({
+        model: MODEL,
+        messages: [{"role": "user", "content":
             "Summarize this conversation for continuity..."
-            + json.dumps(messages, default=str)[:80000]}],
-        max_tokens=2000,
-    )
+            + JSON.stringify(messages, (_, v) => v === undefined ? null : v).slice(0, 80000)}],
+        max_tokens: 2000,
+    });
     return [
-        {"role": "user", "content": f"[Compressed]\n\n{response.content[0].text}"},
+        {"role": "user", "content": `[Compressed]\n\n${response.content[0].text}`},
         {"role": "assistant", "content": "Understood. Continuing."},
-    ]
+    ];
+}
 ```
 
 3. **第3層 -- manual compact**: `compact`ツールが同じ要約処理をオンデマンドでトリガーする。
 
 4. ループが3層すべてを統合する:
 
-```python
-def agent_loop(messages: list):
-    while True:
-        micro_compact(messages)                        # Layer 1
-        if estimate_tokens(messages) > THRESHOLD:
-            messages[:] = auto_compact(messages)       # Layer 2
-        response = client.messages.create(...)
-        # ... tool execution ...
-        if manual_compact:
-            messages[:] = auto_compact(messages)       # Layer 3
+```typescript
+function agentLoop(messages: any[]): void {
+    while (true) {
+        microCompact(messages);                        // Layer 1
+        if (estimateTokens(messages) > THRESHOLD) {
+            messages = autoCompact(messages);         // Layer 2
+        }
+        const response = client.messages.create({...});
+        // ... tool execution ...
+        if (manualCompact) {
+            messages = autoCompact(messages);         // Layer 3
+        }
+    }
+}
 ```
 
 トランスクリプトがディスク上に完全な履歴を保持する。何も真に失われず、アクティブなコンテキストの外に移動されるだけ。
@@ -117,7 +134,7 @@ def agent_loop(messages: list):
 
 ```sh
 cd learn-claude-code
-python agents/s06_context_compact.py
+npx tsx agents-ts/src/s06.ts
 ```
 
 1. `Read every Python file in the agents/ directory one by one` (micro-compactが古い結果を置換するのを観察する)

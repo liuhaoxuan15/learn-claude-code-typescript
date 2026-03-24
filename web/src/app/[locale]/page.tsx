@@ -39,6 +39,7 @@ function getVersionData(id: string) {
 
 export default function HomePage() {
   const t = useTranslations("home");
+  const tSession = useTranslations("sessions");
   const locale = useLocale();
 
   return (
@@ -173,7 +174,7 @@ export default function HomePage() {
                     {meta.title}
                   </h3>
                   <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
-                    {meta.keyInsight}
+                    {tSession(versionId + "_keyInsight") || meta.keyInsight}
                   </p>
                 </Card>
               </Link>

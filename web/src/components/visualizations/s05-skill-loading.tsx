@@ -14,46 +14,46 @@ interface SkillEntry {
 const SKILLS: SkillEntry[] = [
   {
     name: "/commit",
-    summary: "Create git commits following repo conventions",
+    summary: "按照仓库规范创建 git 提交",
     fullTokens: 320,
     content: [
-      "1. Run git status + git diff to see changes",
-      "2. Analyze all staged changes and draft message",
-      "3. Create commit with Co-Authored-By trailer",
-      "4. Run git status after commit to verify",
+      "1. 运行 git status + git diff 查看更改",
+      "2. 分析所有暂存的更改并起草提交信息",
+      "3. 创建提交并添加 Co-Authored-By trailer",
+      "4. 提交后运行 git status 验证",
     ],
   },
   {
     name: "/review-pr",
-    summary: "Review pull requests for bugs and style",
+    summary: "审查 Pull Request 的 bug 和代码风格",
     fullTokens: 480,
     content: [
-      "1. Fetch PR diff via gh pr view",
-      "2. Analyze changes file by file for issues",
-      "3. Check for bugs, security, and style problems",
-      "4. Post review comments with gh pr review",
+      "1. 通过 gh pr view 获取 PR diff",
+      "2. 逐文件分析更改以发现问题",
+      "3. 检查 bug、安全问题和风格问题",
+      "4. 通过 gh pr review 发布审查评论",
     ],
   },
   {
     name: "/test",
-    summary: "Run and analyze test suites",
+    summary: "运行和分析测试套件",
     fullTokens: 290,
     content: [
-      "1. Detect test framework from package.json",
-      "2. Run test suite and capture output",
-      "3. Analyze failures and suggest fixes",
-      "4. Re-run after applying fixes",
+      "1. 从 package.json 检测测试框架",
+      "2. 运行测试套件并捕获输出",
+      "3. 分析失败并建议修复方案",
+      "4. 应用修复后重新运行",
     ],
   },
   {
     name: "/deploy",
-    summary: "Deploy application to target environment",
+    summary: "将应用部署到目标环境",
     fullTokens: 350,
     content: [
-      "1. Verify all tests pass before deploy",
-      "2. Build production bundle",
-      "3. Push to deployment target via CI",
-      "4. Verify health check on deployed URL",
+      "1. 部署前验证所有测试通过",
+      "2. 构建生产环境包",
+      "3. 通过 CI 推送到部署目标",
+      "4. 验证部署 URL 的健康检查",
     ],
   },
 ];
@@ -63,34 +63,34 @@ const MAX_TOKEN_DISPLAY = 1000;
 
 const STEPS = [
   {
-    title: "Layer 1: Compact Summaries",
+    title: "第一层: 精简摘要",
     description:
-      "All skills are summarized in the system prompt. Compact, always present.",
+      "所有技能在系统提示中以摘要形式呈现。精简、常驻。",
   },
   {
-    title: "Skill Invocation",
+    title: "技能调用",
     description:
-      'The model recognizes a skill invocation and triggers the Skill tool.',
+      "模型识别技能调用并触发 Skill 工具。",
   },
   {
-    title: "Layer 2: Full Injection",
+    title: "第二层: 完整注入",
     description:
-      "The full skill instructions are injected as a tool_result, not into the system prompt.",
+      "完整的技能指令作为 tool_result 注入，而不是注入到系统提示中。",
   },
   {
-    title: "In Context Now",
+    title: "已在上下文中",
     description:
-      "The detailed instructions appear as if a tool returned them. The model follows them precisely.",
+      "详细指令就像工具返回的一样出现。模型精确遵循它们。",
   },
   {
-    title: "Stack Skills",
+    title: "堆叠技能",
     description:
-      "Multiple skills can be loaded. Only summaries are permanent; full content comes and goes.",
+      "可以加载多个技能。只有摘要是永久的；完整内容来来去去。",
   },
   {
-    title: "Two-Layer Architecture",
+    title: "双层架构",
     description:
-      "Layer 1: always present, tiny. Layer 2: loaded on demand, detailed. Elegant separation.",
+      "第一层：常驻，精小。第二层：按需加载，详细。优雅的分离。",
   },
 ];
 
@@ -114,7 +114,7 @@ export default function SkillLoading({ title }: { title?: string }) {
   return (
     <section className="space-y-4">
       <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-        {title || "On-Demand Skill Loading"}
+        {title || "按需技能加载"}
       </h2>
 
       <div
@@ -129,15 +129,15 @@ export default function SkillLoading({ title }: { title?: string }) {
               <div className="mb-2 flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-zinc-400" />
                 <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">
-                  System Prompt
+                  系统提示
                 </span>
                 <span className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] text-zinc-400 dark:bg-zinc-800">
-                  always present
+                  常驻
                 </span>
               </div>
               <div className="rounded-lg border border-zinc-300 bg-zinc-900 p-4 dark:border-zinc-600">
                 <div className="mb-2 font-mono text-[10px] text-zinc-500">
-                  # Available Skills
+                  # 可用技能
                 </div>
                 <div className="space-y-1.5">
                   {SKILLS.map((skill, i) => {
@@ -179,7 +179,7 @@ export default function SkillLoading({ title }: { title?: string }) {
                   className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 dark:border-blue-800 dark:bg-blue-950/30"
                 >
                   <span className="text-xs text-blue-600 dark:text-blue-400">
-                    User types:
+                    用户输入:
                   </span>
                   <code className="rounded bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-800 dark:bg-blue-900/50 dark:text-blue-200">
                     /commit
@@ -194,7 +194,7 @@ export default function SkillLoading({ title }: { title?: string }) {
                   className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 dark:border-blue-800 dark:bg-blue-950/30"
                 >
                   <span className="text-xs text-blue-600 dark:text-blue-400">
-                    User types:
+                    用户输入:
                   </span>
                   <code className="rounded bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-800 dark:bg-blue-900/50 dark:text-blue-200">
                     /review-pr
@@ -243,7 +243,7 @@ export default function SkillLoading({ title }: { title?: string }) {
                           </span>
                         </div>
                         <span className="rounded bg-blue-100 px-1.5 py-0.5 font-mono text-[10px] text-blue-600 dark:bg-blue-900/40 dark:text-blue-300">
-                          tool_result
+                          工具结果
                         </span>
                       </div>
                       <div className="space-y-1">
@@ -285,7 +285,7 @@ export default function SkillLoading({ title }: { title?: string }) {
                           </span>
                         </div>
                         <span className="rounded bg-purple-100 px-1.5 py-0.5 font-mono text-[10px] text-purple-600 dark:bg-purple-900/40 dark:text-purple-300">
-                          tool_result
+                          工具结果
                         </span>
                       </div>
                       <div className="space-y-1">
@@ -316,9 +316,9 @@ export default function SkillLoading({ title }: { title?: string }) {
                   exit={{ opacity: 0 }}
                   className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-300"
                 >
-                  The Skill tool returns content as a tool_result message.
-                  The model sees it in context and follows the instructions.
-                  No system prompt bloat.
+                  Skill 工具将内容作为 tool_result 消息返回。
+                  模型在上下文中看到它并遵循指令。
+                  系统提示不会膨胀。
                 </motion.div>
               )}
             </AnimatePresence>
@@ -337,7 +337,7 @@ export default function SkillLoading({ title }: { title?: string }) {
                       LAYER 1
                     </div>
                     <div className="text-xs text-zinc-600 dark:text-zinc-300">
-                      Always present, ~120 tokens
+                      常驻，约 120 tokens
                     </div>
                   </div>
                   <div className="flex-1 rounded border border-blue-200 bg-blue-50 p-2 text-center dark:border-blue-700 dark:bg-blue-900/20">
@@ -345,7 +345,7 @@ export default function SkillLoading({ title }: { title?: string }) {
                       LAYER 2
                     </div>
                     <div className="text-xs text-blue-600 dark:text-blue-300">
-                      On demand, ~300-500 tokens each
+                      按需加载，每个约 300-500 tokens
                     </div>
                   </div>
                 </motion.div>

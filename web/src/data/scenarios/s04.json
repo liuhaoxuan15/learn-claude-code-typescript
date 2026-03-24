@@ -1,51 +1,51 @@
 {
   "version": "s04",
-  "title": "Subagents",
-  "description": "Agent spawns a subagent for isolated subtask execution",
+  "title": "子代理",
+  "description": "Agent 派生子代理来隔离执行子任务",
   "steps": [
     {
       "type": "user_message",
-      "content": "Refactor the calculator: split into modules and add tests",
-      "annotation": "Complex task suitable for delegation"
+      "content": "重构计算器：拆分为模块并添加测试",
+      "annotation": "适合委托给他人的复杂任务"
     },
     {
       "type": "assistant_text",
-      "content": "I'll delegate the test writing to a subagent while I handle the refactoring.",
-      "annotation": "Agent decides to split work using the Task tool"
+      "content": "我将在处理重构的同时委托子代理编写测试。",
+      "annotation": "Agent 决定使用 Task 工具拆分工作"
     },
     {
       "type": "tool_call",
       "content": "Write unit tests for calc.py covering all 4 operations and edge cases like division by zero",
       "toolName": "task",
-      "annotation": "Task tool spawns a subagent with its own isolated context"
+      "annotation": "Task 工具派生出一个拥有独立隔离上下文的子代理"
     },
     {
       "type": "system_event",
       "content": "[Subagent spawned] Context: fresh messages[], same tools, scoped prompt",
-      "annotation": "Subagent gets clean context -- no confusion from parent's conversation"
+      "annotation": "子代理获得干净的上下文——不会因父代理的对话而困惑"
     },
     {
       "type": "tool_result",
       "content": "Created test_calc.py with 8 test cases. All passing.",
       "toolName": "task",
-      "annotation": "Subagent completes and returns a summary to parent"
+      "annotation": "子代理完成并向父代理返回摘要"
     },
     {
       "type": "tool_call",
       "content": "calc.py -> calc/operations.py, calc/cli.py",
       "toolName": "write_file",
-      "annotation": "Parent continues with its own task: refactoring"
+      "annotation": "父代理继续自己的任务：重构"
     },
     {
       "type": "tool_result",
       "content": "Files written successfully",
       "toolName": "write_file",
-      "annotation": "Modules split"
+      "annotation": "模块已拆分"
     },
     {
       "type": "assistant_text",
-      "content": "Refactored into calc/operations.py and calc/cli.py. Tests were written by a subagent and are all passing.",
-      "annotation": "Context isolation prevents confusion between tasks"
+      "content": "已重构为 calc/operations.py 和 calc/cli.py。测试由子代理编写，全部通过。",
+      "annotation": "上下文隔离防止任务之间的混淆"
     }
   ]
 }

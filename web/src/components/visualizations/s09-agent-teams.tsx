@@ -37,13 +37,13 @@ function trayCenter(id: string) {
 
 // Step configuration
 const STEPS = [
-  { title: "The Team", desc: "Teams use a leader-worker pattern. Each teammate has a file-based mailbox inbox." },
-  { title: "Lead Assigns Work", desc: "Communication is async: write a message to the recipient's .jsonl inbox file." },
-  { title: "Read Inbox", desc: "Teammates poll their inbox before each LLM call. New messages become context." },
-  { title: "Independent Work", desc: "Each teammate runs its own agent loop independently." },
-  { title: "Pass Result", desc: "Results flow through the same mailbox mechanism. All communication is via files." },
-  { title: "Feedback Loop", desc: "The mailbox pattern supports any communication topology: linear, broadcast, round-robin." },
-  { title: "File-Based Coordination", desc: "No shared memory, no locks. All coordination through append-only files. Simple, robust, debuggable." },
+  { title: "团队", desc: "团队使用 leader-worker 模式。每个队友有一个基于文件的邮箱收件箱。" },
+  { title: "Leader 分配工作", desc: "通信是异步的：向接收者的 .jsonl 收件箱文件写入消息。" },
+  { title: "读取收件箱", desc: "队友在每次 LLM 调用前轮询其收件箱。新消息成为上下文。" },
+  { title: "独立工作", desc: "每个队友独立运行自己的 agent 循环。" },
+  { title: "传递结果", desc: "结果通过相同的邮箱机制流动。所有通信都通过文件。" },
+  { title: "反馈循环", desc: "邮箱模式支持任何通信拓扑：线性、广播、轮询。" },
+  { title: "基于文件的协调", desc: "无共享内存，无锁。所有协调通过仅追加文件。简单、健壮、可调试。" },
 ];
 
 // Helper: determine which agent glows at each step
@@ -139,7 +139,7 @@ export default function AgentTeams({ title }: { title?: string }) {
   return (
     <section className="space-y-4">
       <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-        {title || "Agent Team Mailboxes"}
+        {title || "Agent 团队邮箱"}
       </h2>
       <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900 min-h-[500px]">
         <div className="flex flex-col lg:flex-row gap-4">

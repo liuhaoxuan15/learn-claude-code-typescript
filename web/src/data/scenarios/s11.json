@@ -1,44 +1,44 @@
 {
   "version": "s11",
-  "title": "Autonomous Agents",
-  "description": "Teammates self-govern with idle cycles and auto-claiming",
+  "title": "自主 Agent",
+  "description": "队友通过空闲周期和自动认领实现自我管理",
   "steps": [
     {
       "type": "user_message",
-      "content": "Implement the full feature backlog",
-      "annotation": "Open-ended task for autonomous team execution"
+      "content": "实现完整的功能待办列表",
+      "annotation": "用于自主团队执行的开放性任务"
     },
     {
       "type": "tool_call",
       "content": "create_tasks([\n  { title: \"User authentication\", status: \"open\" },\n  { title: \"Dashboard UI\", status: \"open\" },\n  { title: \"API rate limiting\", status: \"open\" },\n  { title: \"Integration tests\", status: \"open\" }\n])",
       "toolName": "task_manager",
-      "annotation": "Tasks created with no owner -- available for auto-claiming"
+      "annotation": "创建的任务没有负责人——可供自动认领"
     },
     {
       "type": "tool_result",
       "content": "4 tasks created on shared board",
       "toolName": "task_manager",
-      "annotation": "Unassigned tasks visible to all teammates"
+      "annotation": "未分配的任务对所有队友可见"
     },
     {
       "type": "system_event",
       "content": "[frontend-dev] Idle cycle triggered\n  1. Check inbox -> 0 messages\n  2. Poll task board -> found unowned task #2 \"Dashboard UI\"\n  3. Auto-claim task #2\n  4. Status: idle -> working",
-      "annotation": "Idle cycle: check inbox, poll tasks, auto-claim, resume work"
+      "annotation": "空闲周期：检查收件箱、轮询任务、自动认领、恢复工作"
     },
     {
       "type": "system_event",
       "content": "[backend-dev] Idle cycle triggered\n  1. Check inbox -> 0 messages\n  2. Poll task board -> found unowned task #1 \"User authentication\"\n  3. Auto-claim task #1\n  4. Status: idle -> working",
-      "annotation": "Multiple teammates claim different tasks concurrently"
+      "annotation": "多个队友并发认领不同任务"
     },
     {
       "type": "system_event",
       "content": "[tester] Idle cycle triggered\n  1. Check inbox -> 0 messages\n  2. Poll task board -> task #4 blocked by #1, #2, #3\n  3. No claimable tasks\n  4. Status: idle (will retry in 30s)",
-      "annotation": "Timeout-based polling prevents busy-waiting"
+      "annotation": "基于超时的轮询防止忙等待"
     },
     {
       "type": "assistant_text",
-      "content": "Team is self-organizing: frontend-dev claimed Dashboard UI, backend-dev claimed User auth. Tester is waiting for dependencies to clear.",
-      "annotation": "Polling + timeout makes teammates autonomous -- no micromanagement needed"
+      "content": "团队正在自我组织：frontend-dev 认领了 Dashboard UI，backend-dev 认领了用户认证。tester 正在等待依赖清理。",
+      "annotation": "轮询 + 超时使队友自主化——无需微观管理"
     }
   ]
 }

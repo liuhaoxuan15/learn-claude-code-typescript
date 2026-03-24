@@ -14,9 +14,9 @@ const NAV_ITEMS = [
 ] as const;
 
 const LOCALES = [
-  { code: "en", label: "EN" },
-  { code: "zh", label: "中文" },
-  { code: "ja", label: "日本語" },
+  { code: "en", labelKey: "locale_en" },
+  { code: "zh", labelKey: "locale_zh" },
+  { code: "ja", labelKey: "locale_ja" },
 ];
 
 export function Header() {
@@ -82,7 +82,7 @@ export function Header() {
                     : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400"
                 )}
               >
-                {l.label}
+                {t(l.labelKey as any)}
               </button>
             ))}
           </div>
@@ -139,7 +139,7 @@ export function Header() {
                       : "border border-[var(--color-border)]"
                   )}
                 >
-                  {l.label}
+                  {t(l.labelKey as any)}
                 </button>
               ))}
             </div>

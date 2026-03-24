@@ -8,7 +8,7 @@
 
 ## 问题
 
-智能体工作越久, messages 数组越胖。每次读文件、跑命令的输出都永久留在上下文里。"这个项目用什么测试框架?" 可能要读 5 个文件, 但父智能体只需要一个词: "pytest。"
+智能体工作越久, messages 数组越胖。每次读文件、跑命令的输出都永久留在上下文里。"这个项目用什么测试框架?" 可能要读 5 个文件, 但父智能体只需要一个词: "jest。"
 
 ## 解决方案
 
@@ -30,45 +30,66 @@ Parent context stays clean. Subagent context is discarded.
 
 1. 父智能体有一个 `task` 工具。子智能体拥有除 `task` 外的所有基础工具 (禁止递归生成)。
 
-```python
-PARENT_TOOLS = CHILD_TOOLS + [
-    {"name": "task",
-     "description": "Spawn a subagent with fresh context.",
-     "input_schema": {
-         "type": "object",
-         "properties": {"prompt": {"type": "string"}},
-         "required": ["prompt"],
-     }},
-]
+```typescript
+const PARENT_TOOLS = [
+  ...CHILD_TOOLS,
+  {
+    name: "task",
+    description: "Spawn a subagent with fresh context.",
+    input_schema: {
+      type: "object" as const,
+      properties: { prompt: { type: "string" as const } },
+      required: ["prompt"] as const,
+    },
+  },
+];
 ```
 
 2. 子智能体以 `messages=[]` 启动, 运行自己的循环。只有最终文本返回给父智能体。
 
-```python
-def run_subagent(prompt: str) -> str:
-    sub_messages = [{"role": "user", "content": prompt}]
-    for _ in range(30):  # safety limit
-        response = client.messages.create(
-            model=MODEL, system=SUBAGENT_SYSTEM,
-            messages=sub_messages,
-            tools=CHILD_TOOLS, max_tokens=8000,
-        )
-        sub_messages.append({"role": "assistant",
-                             "content": response.content})
-        if response.stop_reason != "tool_use":
-            break
-        results = []
-        for block in response.content:
-            if block.type == "tool_use":
-                handler = TOOL_HANDLERS.get(block.name)
-                output = handler(**block.input)
-                results.append({"type": "tool_result",
-                    "tool_use_id": block.id,
-                    "content": str(output)[:50000]})
-        sub_messages.append({"role": "user", "content": results})
-    return "".join(
-        b.text for b in response.content if hasattr(b, "text")
-    ) or "(no summary)"
+```typescript
+async function run_subagent(prompt: string): Promise<string> {
+  const subMessages: Message[] = [{ role: "user", content: prompt }];
+
+  for (let i = 0; i < 30; i++) {  // safety limit
+    const response = await client.messages.create({
+      model: MODEL,
+      system: SUBAGENT_SYSTEM,
+      messages: subMessages as any,
+      tools: CHILD_TOOLS as any,
+      max_tokens: 8000,
+    });
+
+    subMessages.push({ role: "assistant", content: response.content as any });
+
+    if (response.stop_reason !== "tool_use") {
+      break;
+    }
+
+    const results: ContentBlock[] = [];
+    for (const block of response.content) {
+      if (block.type === "tool_use") {
+        const handler = TOOL_HANDLERS[block.name];
+        const output = handler ? handler(block.input) : `Unknown tool: ${block.name}`;
+        results.push({
+          type: "tool_result",
+          tool_use_id: block.id,
+          content: String(output).slice(0, 50000),
+        });
+      }
+    }
+    subMessages.push({ role: "user", content: results });
+  }
+
+  const last = subMessages[subMessages.length - 1];
+  if (Array.isArray(last.content)) {
+    return last.content
+      .filter((b): b is TextBlock => b.type === "text")
+      .map((b) => b.text)
+      .join("") || "(no summary)";
+  }
+  return "(no summary)";
+}
 ```
 
 子智能体可能跑了 30+ 次工具调用, 但整个消息历史直接丢弃。父智能体收到的只是一段摘要文本, 作为普通 `tool_result` 返回。
@@ -86,11 +107,11 @@ def run_subagent(prompt: str) -> str:
 
 ```sh
 cd learn-claude-code
-python agents/s04_subagent.py
+npx tsx agents-ts/src/s04.ts
 ```
 
 试试这些 prompt (英文 prompt 对 LLM 效果更好, 也可以用中文):
 
 1. `Use a subtask to find what testing framework this project uses`
-2. `Delegate: read all .py files and summarize what each one does`
+2. `Delegate: read all .ts files and summarize what each one does`
 3. `Use a task to create a new module, then verify it from here`

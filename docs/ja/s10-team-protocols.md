@@ -44,40 +44,43 @@ Trackers:
 
 1. リーダーがrequest_idを生成し、インボックス経由でシャットダウンを開始する。
 
-```python
-shutdown_requests = {}
+```typescript
+const shutdownRequests: Record<string, {target: string, status: string}> = {};
 
-def handle_shutdown_request(teammate: str) -> str:
-    req_id = str(uuid.uuid4())[:8]
-    shutdown_requests[req_id] = {"target": teammate, "status": "pending"}
+function handleShutdownRequest(teammate: string): string {
+    const reqId = uuid.v4().slice(0, 8);
+    shutdownRequests[reqId] = {"target": teammate, "status": "pending"};
     BUS.send("lead", teammate, "Please shut down gracefully.",
-             "shutdown_request", {"request_id": req_id})
-    return f"Shutdown request {req_id} sent (status: pending)"
+             "shutdown_request", {"request_id": reqId});
+    return `Shutdown request ${reqId} sent (status: pending)`;
+}
 ```
 
 2. チームメイトがリクエストを受信し、承認または拒否で応答する。
 
-```python
-if tool_name == "shutdown_response":
-    req_id = args["request_id"]
-    approve = args["approve"]
-    shutdown_requests[req_id]["status"] = "approved" if approve else "rejected"
-    BUS.send(sender, "lead", args.get("reason", ""),
-             "shutdown_response",
-             {"request_id": req_id, "approve": approve})
+```typescript
+    if (toolName === "shutdown_response") {
+        const reqId = args["request_id"];
+        const approve = args["approve"];
+        shutdownRequests[reqId]["status"] = approve ? "approved" : "rejected";
+        BUS.send(sender, "lead", args.get("reason", ""),
+                 "shutdown_response",
+                 {"request_id": reqId, approve});
+    }
 ```
 
 3. プラン承認も同一パターン。チームメイトがプランを提出(request_idを生成)、リーダーがレビュー(同じrequest_idを参照)。
 
-```python
-plan_requests = {}
+```typescript
+const planRequests: Record<string, {from: string, plan: string, status: string}> = {};
 
-def handle_plan_review(request_id, approve, feedback=""):
-    req = plan_requests[request_id]
-    req["status"] = "approved" if approve else "rejected"
+function handlePlanReview(requestId: string, approve: boolean, feedback = ""): void {
+    const req = planRequests[requestId];
+    req["status"] = approve ? "approved" : "rejected";
     BUS.send("lead", req["from"], feedback,
              "plan_approval_response",
-             {"request_id": request_id, "approve": approve})
+             {"request_id": requestId, approve});
+}
 ```
 
 1つのFSM、2つの応用。同じ`pending -> approved | rejected`状態機械が、あらゆるリクエスト-レスポンスプロトコルに適用できる。
@@ -96,7 +99,7 @@ def handle_plan_review(request_id, approve, feedback=""):
 
 ```sh
 cd learn-claude-code
-python agents/s10_team_protocols.py
+npx tsx agents-ts/src/s10.ts
 ```
 
 1. `Spawn alice as a coder. Then request her shutdown.`

@@ -1,51 +1,51 @@
 {
   "version": "s12",
-  "title": "Worktree + Task Isolation",
-  "description": "Use a shared task board with optional worktree lanes for clean parallel execution",
+  "title": "Worktree + 任务隔离",
+  "description": "使用共享任务看板配合可选的 worktree 通道实现干净的并行执行",
   "steps": [
     {
       "type": "user_message",
-      "content": "Implement auth refactor and login UI updates in parallel",
-      "annotation": "Two active tasks in one workspace would collide"
+      "content": "并行执行认证重构和登录 UI 更新",
+      "annotation": "一个工作空间中的两个活跃任务会冲突"
     },
     {
       "type": "tool_call",
       "content": "task_create(subject: \"Auth refactor\")\ntask_create(subject: \"Login UI polish\")",
       "toolName": "task_manager",
-      "annotation": "Shared board remains the coordination source of truth"
+      "annotation": "共享看板仍是协调的真实来源"
     },
     {
       "type": "tool_call",
       "content": "worktree_create(name: \"auth-refactor\", task_id: 1)\nworktree_create(name: \"ui-login\")\ntask_bind_worktree(task_id: 2, worktree: \"ui-login\")",
       "toolName": "worktree_manager",
-      "annotation": "Lane allocation and task association are composable; task 2 binds after lane creation"
+      "annotation": "通道分配和任务关联是可组合的；任务 2 在通道创建后绑定"
     },
     {
       "type": "system_event",
       "content": "worktree.create.before/after emitted\n.tasks/task_1.json -> { status: \"in_progress\", worktree: \"auth-refactor\" }\n.tasks/task_2.json -> { status: \"in_progress\", worktree: \"ui-login\" }\n.worktrees/index.json updated",
-      "annotation": "Control-plane state remains canonical; hook-style consumers can react to lifecycle events without owning canonical state writes"
+      "annotation": "控制平面状态保持权威；钩子风格的消费者可以响应生命周期事件，而不拥有权威状态写入"
     },
     {
       "type": "tool_call",
       "content": "worktree_run(name: \"auth-refactor\", command: \"pytest tests/auth -q\")\nworktree_run(name: \"ui-login\", command: \"npm test -- login\")",
       "toolName": "worktree_run",
-      "annotation": "In this teaching runtime, commands route by lane-scoped cwd; other runtimes may use session-level directory switches. The invariant is explicit execution context."
+      "annotation": "在这个教学运行时中，命令通过通道限定的 cwd 路由；其他运行时可能使用会话级目录切换。不变式是明确的执行上下文。"
     },
     {
       "type": "tool_call",
       "content": "worktree_keep(name: \"ui-login\")\nworktree_remove(name: \"auth-refactor\", complete_task: true)\nworktree_events(limit: 10)",
       "toolName": "worktree_manager",
-      "annotation": "Closeout is explicit tool-driven state transition: mix keep/remove decisions and query lifecycle events in one pass"
+      "annotation": "关闭是显式的工具驱动状态转换：在一次传递中混合 keep/remove 决策并查询生命周期事件"
     },
     {
       "type": "system_event",
       "content": "worktree.keep emitted for ui-login\nworktree.remove.before/after emitted for auth-refactor\ntask.completed emitted for #1\n.worktrees/events.jsonl appended",
-      "annotation": "Lifecycle transitions become explicit records while task/worktree files remain source-of-truth"
+      "annotation": "生命周期转换成为显式记录，而任务/worktree 文件保持为真实来源"
     },
     {
       "type": "assistant_text",
-      "content": "Task board handles coordination, worktrees handle isolation. Parallel tracks stay clean and auditable.",
-      "annotation": "Coordinate in one board, isolate by lane only where needed, and run optional policy/audit side effects from lifecycle events"
+      "content": "任务看板处理协调，worktree 处理隔离。并行轨道保持干净且可审计。",
+      "annotation": "在一个看板中协调，仅在需要时通过通道隔离，并在生命周期事件中运行可选的策略/审计副作用"
     }
   ]
 }

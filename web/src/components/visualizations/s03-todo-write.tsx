@@ -18,52 +18,52 @@ interface Task {
 const TASK_STATES: Task[][] = [
   // Step 0: all pending
   [
-    { id: 1, label: "Write auth tests", status: "pending" },
-    { id: 2, label: "Fix mobile layout", status: "pending" },
-    { id: 3, label: "Add error handling", status: "pending" },
-    { id: 4, label: "Update config loader", status: "pending" },
+    { id: 1, label: "编写认证测试", status: "pending" },
+    { id: 2, label: "修复移动端布局", status: "pending" },
+    { id: 3, label: "添加错误处理", status: "pending" },
+    { id: 4, label: "更新配置加载器", status: "pending" },
   ],
   // Step 1: still all pending (idle round 1)
   [
-    { id: 1, label: "Write auth tests", status: "pending" },
-    { id: 2, label: "Fix mobile layout", status: "pending" },
-    { id: 3, label: "Add error handling", status: "pending" },
-    { id: 4, label: "Update config loader", status: "pending" },
+    { id: 1, label: "编写认证测试", status: "pending" },
+    { id: 2, label: "修复移动端布局", status: "pending" },
+    { id: 3, label: "添加错误处理", status: "pending" },
+    { id: 4, label: "更新配置加载器", status: "pending" },
   ],
   // Step 2: still all pending (idle round 2)
   [
-    { id: 1, label: "Write auth tests", status: "pending" },
-    { id: 2, label: "Fix mobile layout", status: "pending" },
-    { id: 3, label: "Add error handling", status: "pending" },
-    { id: 4, label: "Update config loader", status: "pending" },
+    { id: 1, label: "编写认证测试", status: "pending" },
+    { id: 2, label: "修复移动端布局", status: "pending" },
+    { id: 3, label: "添加错误处理", status: "pending" },
+    { id: 4, label: "更新配置加载器", status: "pending" },
   ],
   // Step 3: NAG fires, task 1 moves to in_progress
   [
-    { id: 1, label: "Write auth tests", status: "in_progress" },
-    { id: 2, label: "Fix mobile layout", status: "pending" },
-    { id: 3, label: "Add error handling", status: "pending" },
-    { id: 4, label: "Update config loader", status: "pending" },
+    { id: 1, label: "编写认证测试", status: "in_progress" },
+    { id: 2, label: "修复移动端布局", status: "pending" },
+    { id: 3, label: "添加错误处理", status: "pending" },
+    { id: 4, label: "更新配置加载器", status: "pending" },
   ],
   // Step 4: task 1 done
   [
-    { id: 1, label: "Write auth tests", status: "done" },
-    { id: 2, label: "Fix mobile layout", status: "pending" },
-    { id: 3, label: "Add error handling", status: "pending" },
-    { id: 4, label: "Update config loader", status: "pending" },
+    { id: 1, label: "编写认证测试", status: "done" },
+    { id: 2, label: "修复移动端布局", status: "pending" },
+    { id: 3, label: "添加错误处理", status: "pending" },
+    { id: 4, label: "更新配置加载器", status: "pending" },
   ],
   // Step 5: task 2 self-directed to in_progress
   [
-    { id: 1, label: "Write auth tests", status: "done" },
-    { id: 2, label: "Fix mobile layout", status: "in_progress" },
-    { id: 3, label: "Add error handling", status: "pending" },
-    { id: 4, label: "Update config loader", status: "pending" },
+    { id: 1, label: "编写认证测试", status: "done" },
+    { id: 2, label: "修复移动端布局", status: "in_progress" },
+    { id: 3, label: "添加错误处理", status: "pending" },
+    { id: 4, label: "更新配置加载器", status: "pending" },
   ],
   // Step 6: tasks 2,3 done, task 4 in_progress
   [
-    { id: 1, label: "Write auth tests", status: "done" },
-    { id: 2, label: "Fix mobile layout", status: "done" },
-    { id: 3, label: "Add error handling", status: "done" },
-    { id: 4, label: "Update config loader", status: "in_progress" },
+    { id: 1, label: "编写认证测试", status: "done" },
+    { id: 2, label: "修复移动端布局", status: "done" },
+    { id: 3, label: "添加错误处理", status: "done" },
+    { id: 4, label: "更新配置加载器", status: "in_progress" },
   ],
 ];
 
@@ -76,13 +76,13 @@ const NAG_FIRES_PER_STEP = [false, false, false, true, false, false, false];
 
 // Step annotations
 const STEP_INFO = [
-  { title: "The Plan", desc: "TodoWrite gives the model a visible plan. All tasks start as pending." },
-  { title: "Round 1 -- Idle", desc: "The model does work but doesn't touch its todos. The nag counter increments." },
-  { title: "Round 2 -- Still Idle", desc: "Two rounds without progress. Pressure builds." },
-  { title: "NAG!", desc: "Threshold reached! System message injected: 'You have pending tasks. Pick one up now!'" },
-  { title: "Task Complete", desc: "The model completes the task. Timer stays at 0 -- working on todos resets the counter." },
-  { title: "Self-Directed", desc: "Once the model learns the pattern, it picks up tasks voluntarily." },
-  { title: "Mission Accomplished", desc: "Visible plan + nag pressure = reliable task completion." },
+  { title: "计划", desc: "TodoWrite 给模型一个可见的计划。所有任务初始为待处理状态。" },
+  { title: "第 1 轮 -- 空闲", desc: "模型在工作，但没有处理待办事项。催促计数器递增。" },
+  { title: "第 2 轮 -- 仍然空闲", desc: "两轮没有进展。压力积累中。" },
+  { title: "NAG!", desc: "阈值达到！系统消息注入:'你有待处理的任务。现在接一个！'" },
+  { title: "任务完成", desc: "模型完成任务。计时器归零 —— 处理待办事项会重置计数器。" },
+  { title: "主动自发", desc: "一旦模型学会模式，它会自愿承接任务。" },
+  { title: "任务完成", desc: "可见计划 + 催促压力 = 可靠的任务完成。" },
 ];
 
 // -- Column component --
@@ -184,7 +184,7 @@ function NagGauge({ value, max, firing }: { value: number; max: number; firing: 
     <div className="space-y-1">
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium text-zinc-600 dark:text-zinc-300">
-          Nag Timer
+          催促计时器
         </span>
         <span className="font-mono text-xs text-zinc-500 dark:text-zinc-400">
           {value}/{max}
@@ -241,7 +241,7 @@ export default function TodoWrite({ title }: { title?: string }) {
   return (
     <section className="min-h-[500px] space-y-4">
       <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-        {title || "TodoWrite Nag System"}
+        {title || "TodoWrite 催促系统"}
       </h2>
 
       <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
@@ -266,19 +266,19 @@ export default function TodoWrite({ title }: { title?: string }) {
         {/* Kanban board */}
         <div className="flex gap-3">
           <KanbanColumn
-            title="Pending"
+            title="待处理"
             tasks={pendingTasks}
             accentClass="bg-zinc-200 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300"
             headerBg="bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
           />
           <KanbanColumn
-            title="In Progress"
+            title="进行中"
             tasks={inProgressTasks}
             accentClass="bg-amber-200 text-amber-700 dark:bg-amber-800 dark:text-amber-200"
             headerBg="bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
           />
           <KanbanColumn
-            title="Done"
+            title="已完成"
             tasks={doneTasks}
             accentClass="bg-emerald-200 text-emerald-700 dark:bg-emerald-800 dark:text-emerald-200"
             headerBg="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300"
@@ -288,7 +288,7 @@ export default function TodoWrite({ title }: { title?: string }) {
         {/* Progress summary */}
         <div className="mt-3 flex items-center justify-between rounded-md bg-zinc-100 px-3 py-2 dark:bg-zinc-800">
           <span className="font-mono text-[11px] text-zinc-500 dark:text-zinc-400">
-            Progress: {doneTasks.length}/{tasks.length} complete
+            进度: {doneTasks.length}/{tasks.length} 已完成
           </span>
           <div className="flex gap-0.5">
             {tasks.map((t) => (

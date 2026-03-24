@@ -15,6 +15,7 @@ const data = versionData as VersionIndex;
 
 export default function ComparePage() {
   const t = useTranslations("compare");
+  const tSession = useTranslations("sessions");
   const locale = useLocale();
   const [versionA, setVersionA] = useState<string>("");
   const [versionB, setVersionB] = useState<string>("");
@@ -106,7 +107,7 @@ export default function ComparePage() {
             <Card>
               <CardHeader>
                 <CardTitle>{metaA?.title || versionA}</CardTitle>
-                <p className="text-sm text-zinc-500">{metaA?.subtitle}</p>
+                <p className="text-sm text-zinc-500">{tSession(versionA + "_subtitle") || metaA?.subtitle}</p>
               </CardHeader>
               <div className="space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
                 <p>{infoA.loc} LOC</p>
@@ -117,7 +118,7 @@ export default function ComparePage() {
             <Card>
               <CardHeader>
                 <CardTitle>{metaB?.title || versionB}</CardTitle>
-                <p className="text-sm text-zinc-500">{metaB?.subtitle}</p>
+                <p className="text-sm text-zinc-500">{tSession(versionB + "_subtitle") || metaB?.subtitle}</p>
               </CardHeader>
               <div className="space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
                 <p>{infoB.loc} LOC</p>

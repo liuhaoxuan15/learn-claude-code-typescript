@@ -1,56 +1,56 @@
 {
   "version": "s08",
-  "title": "Background Tasks",
-  "description": "Agent executes long-running tasks in background threads",
+  "title": "后台任务",
+  "description": "Agent 在后台线程中执行长时间运行的任务",
   "steps": [
     {
       "type": "user_message",
-      "content": "Run the test suite and while it's running, fix the linting errors",
-      "annotation": "Two tasks that can run concurrently"
+      "content": "运行测试套件，同时修复 linting 错误",
+      "annotation": "两个可以并发运行的任务"
     },
     {
       "type": "assistant_text",
-      "content": "I'll start the tests in the background and fix linting in parallel.",
-      "annotation": "Agent recognizes opportunity for concurrent execution"
+      "content": "我将在后台启动测试并并行修复 linting。",
+      "annotation": "Agent 识别到并发执行的机会"
     },
     {
       "type": "tool_call",
       "content": "pytest tests/ -v --timeout=300",
       "toolName": "background_task",
-      "annotation": "BackgroundManager spawns a thread for long-running test suite"
+      "annotation": "BackgroundManager 为长时间运行的测试套件派生一个线程"
     },
     {
       "type": "system_event",
       "content": "[BackgroundManager] Thread spawned: task_001\nRunning: pytest tests/ -v --timeout=300\nStatus: in_progress",
-      "annotation": "Thread is running independently -- main loop continues"
+      "annotation": "线程独立运行——主循环继续"
     },
     {
       "type": "tool_result",
       "content": "Background task started: task_001",
       "toolName": "background_task",
-      "annotation": "Control returns immediately to the agent"
+      "annotation": "控制权立即返回给 agent"
     },
     {
       "type": "tool_call",
       "content": "ruff check --fix .",
       "toolName": "bash",
-      "annotation": "Agent works on linting while tests run in background"
+      "annotation": "Agent 在测试于后台运行的同时处理 linting"
     },
     {
       "type": "tool_result",
       "content": "Fixed 12 linting errors in 5 files",
       "toolName": "bash",
-      "annotation": "Linting fixed concurrently with tests"
+      "annotation": "与测试并行修复了 linting"
     },
     {
       "type": "system_event",
       "content": "[Notification] Background task_001 completed\nResult: 47 tests passed, 2 failed\nFailed: test_auth.py::test_token_expiry, test_api.py::test_rate_limit",
-      "annotation": "Background thread notifies main loop via notification queue"
+      "annotation": "后台线程通过通知队列通知主循环"
     },
     {
       "type": "assistant_text",
-      "content": "Linting is fixed. Tests finished: 47 passed, 2 failed. I'll fix the failing tests now.",
-      "annotation": "Non-blocking execution via threads + queue enables parallel work"
+      "content": "Linting 已修复。测试完成：47 通过，2 失败。我现在来修复失败的测试。",
+      "annotation": "线程 + 队列的非阻塞执行实现了并行工作"
     }
   ]
 }

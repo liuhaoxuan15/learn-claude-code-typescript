@@ -1,44 +1,44 @@
 {
   "version": "s09",
-  "title": "Agent Teams",
-  "description": "Persistent teammates communicate via JSONL inboxes",
+  "title": "Agent 团队",
+  "description": "持久化队友通过 JSONL 收件箱进行通信",
   "steps": [
     {
       "type": "user_message",
-      "content": "Build a full-stack app: frontend in React, backend in Python, with tests",
-      "annotation": "Large task requiring team collaboration"
+      "content": "构建一个全栈应用：前端用 React，后端用 Python，并包含测试",
+      "annotation": "需要团队协作的大型任务"
     },
     {
       "type": "tool_call",
       "content": "spawn_teammate(\n  name: \"frontend-dev\",\n  role: \"React specialist\"\n)\nspawn_teammate(\n  name: \"backend-dev\",\n  role: \"Python API specialist\"\n)",
       "toolName": "teammate_manager",
-      "annotation": "Unlike subagents (s04) that die after one task, teammates persist"
+      "annotation": "与子代理（s04）完成一个任务后死亡不同，队友是持久化的"
     },
     {
       "type": "system_event",
       "content": "[TeammateManager] Team created:\n  .team/config.json written\n  frontend-dev [idle] - own thread, own agent loop\n  backend-dev [idle] - own thread, own agent loop",
-      "annotation": "Each teammate runs its own while(tool_use) loop in a separate thread"
+      "annotation": "每个队友在自己的线程中运行独立的 while(tool_use) 循环"
     },
     {
       "type": "tool_call",
       "content": "send_message(\n  to: \"backend-dev\",\n  content: \"Build the user API: GET/POST /users\"\n)",
       "toolName": "send_message",
-      "annotation": "Message appended to .team/inbox/backend-dev.jsonl"
+      "annotation": "消息追加到 .team/inbox/backend-dev.jsonl"
     },
     {
       "type": "system_event",
       "content": "[backend-dev] Checking inbox... 1 new message\n  From: lead\n  Content: \"Build the user API: GET/POST /users\"\n  (inbox drained after read)",
-      "annotation": "Inbox is read-then-clear: prevents duplicate processing"
+      "annotation": "收件箱是读取即清除：防止重复处理"
     },
     {
       "type": "system_event",
       "content": "[backend-dev -> frontend-dev] Reply via inbox:\n  \"API ready: GET /users, POST /users, GET /users/:id\"\n  Written to .team/inbox/frontend-dev.jsonl",
-      "annotation": "Teammates message each other through the same JSONL mechanism"
+      "annotation": "队友通过相同的 JSONL 机制相互发送消息"
     },
     {
       "type": "assistant_text",
-      "content": "Team is communicating via file-based inboxes. Each teammate has its own .jsonl file -- append to send, drain to read.",
-      "annotation": "JSONL inboxes decouple sender timing from receiver timing"
+      "content": "团队通过基于文件的收件箱进行通信。每个队友都有自己的 .jsonl 文件——追加发送，读取后清空。",
+      "annotation": "JSONL 收件箱解耦了发送方和接收方的时间安排"
     }
   ]
 }

@@ -50,56 +50,85 @@ This task graph becomes the coordination backbone for everything after s07: back
 
 1. **TaskManager**: one JSON file per task, CRUD with dependency graph.
 
-```python
-class TaskManager:
-    def __init__(self, tasks_dir: Path):
-        self.dir = tasks_dir
-        self.dir.mkdir(exist_ok=True)
-        self._next_id = self._max_id() + 1
+```typescript
+interface Task {
+  id: number;
+  subject: string;
+  description: string;
+  status: "pending" | "in_progress" | "completed";
+  blockedBy: number[];
+  blocks: number[];
+  owner: string;
+}
 
-    def create(self, subject, description=""):
-        task = {"id": self._next_id, "subject": subject,
-                "status": "pending", "blockedBy": [],
-                "blocks": [], "owner": ""}
-        self._save(task)
-        self._next_id += 1
-        return json.dumps(task, indent=2)
+class TaskManager {
+  private dir: string;
+  private nextId: number;
+
+  constructor(tasksDir: string) {
+    this.dir = tasksDir;
+    fs.mkdirSync(this.dir, { recursive: true });
+    this.nextId = this.maxId() + 1;
+  }
+
+  create(subject: string, description = ""): string {
+    const task: Task = {
+      id: this.nextId,
+      subject,
+      description,
+      status: "pending",
+      blockedBy: [],
+      blocks: [],
+      owner: "",
+    };
+    this.save(task);
+    this.nextId++;
+    return JSON.stringify(task, null, 2);
+  }
+}
 ```
 
 2. **Dependency resolution**: completing a task clears its ID from every other task's `blockedBy` list, automatically unblocking dependents.
 
-```python
-def _clear_dependency(self, completed_id):
-    for f in self.dir.glob("task_*.json"):
-        task = json.loads(f.read_text())
-        if completed_id in task.get("blockedBy", []):
-            task["blockedBy"].remove(completed_id)
-            self._save(task)
+```typescript
+private clearDependency(completedId: number): void {
+  for (const f of fs.readdirSync(this.dir)) {
+    if (!f.endsWith(".json")) continue;
+    const task = JSON.parse(fs.readFileSync(path.join(this.dir, f), "utf-8"));
+    if (task.blockedBy?.includes(completedId)) {
+      task.blockedBy = task.blockedBy.filter((id: number) => id !== completedId);
+      this.save(task);
+    }
+  }
+}
 ```
 
 3. **Status + dependency wiring**: `update` handles transitions and dependency edges.
 
-```python
-def update(self, task_id, status=None,
-           add_blocked_by=None, add_blocks=None):
-    task = self._load(task_id)
-    if status:
-        task["status"] = status
-        if status == "completed":
-            self._clear_dependency(task_id)
-    self._save(task)
+```typescript
+update(taskId: number, status?: string, addBlockedBy?: number[], addBlocks?: number[]): string {
+  const task = this.load(taskId);
+  if (status) {
+    task.status = status as Task["status"];
+    if (status === "completed") {
+      this.clearDependency(taskId);
+    }
+  }
+  this.save(task);
+  return JSON.stringify(task, null, 2);
+}
 ```
 
 4. Four task tools go into the dispatch map.
 
-```python
-TOOL_HANDLERS = {
-    # ...base tools...
-    "task_create": lambda **kw: TASKS.create(kw["subject"]),
-    "task_update": lambda **kw: TASKS.update(kw["task_id"], kw.get("status")),
-    "task_list":   lambda **kw: TASKS.list_all(),
-    "task_get":    lambda **kw: TASKS.get(kw["task_id"]),
-}
+```typescript
+const TOOL_HANDLERS: Record<string, ToolHandler> = {
+  // ...base tools...
+  task_create: (p) => TASKS.create(p["subject"] as string),
+  task_update: (p) => TASKS.update(p["task_id"] as number, p["status"] as string | undefined),
+  task_list: () => TASKS.listAll(),
+  task_get: (p) => TASKS.get(p["task_id"] as number),
+};
 ```
 
 From s07 onward, the task graph is the default for multi-step work. s03's Todo remains for quick single-session checklists.
@@ -118,7 +147,7 @@ From s07 onward, the task graph is the default for multi-step work. s03's Todo r
 
 ```sh
 cd learn-claude-code
-python agents/s07_task_system.py
+npx tsx agents-ts/src/s07.ts
 ```
 
 1. `Create 3 tasks: "Setup project", "Write code", "Write tests". Make them depend on each other in order.`

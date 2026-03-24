@@ -1,51 +1,51 @@
 {
   "version": "s06",
-  "title": "Compact",
-  "description": "Agent compresses context when tokens exceed threshold",
+  "title": "压缩",
+  "description": "当 token 超过阈值时 Agent 压缩上下文",
   "steps": [
     {
       "type": "user_message",
-      "content": "Analyze all Python files in this project and summarize each one",
-      "annotation": "A task that will generate large amounts of context"
+      "content": "分析这个项目中的所有 Python 文件并总结每个文件",
+      "annotation": "一个会产生大量上下文的任务"
     },
     {
       "type": "tool_call",
       "content": "find . -name '*.py' -type f",
       "toolName": "bash",
-      "annotation": "Finding all files to analyze"
+      "annotation": "查找所有要分析的文件"
     },
     {
       "type": "tool_result",
       "content": "./src/main.py\n./src/utils.py\n./src/models.py\n./tests/test_main.py\n... (28 more files)",
       "toolName": "bash",
-      "annotation": "32 files found -- reading all of them will generate massive context"
+      "annotation": "找到 32 个文件——读取所有文件将产生大量上下文"
     },
     {
       "type": "assistant_text",
-      "content": "I'll read and analyze each file systematically.",
-      "annotation": "Agent begins processing files one by one"
+      "content": "我将系统地读取并分析每个文件。",
+      "annotation": "Agent 开始逐个处理文件"
     },
     {
       "type": "tool_call",
       "content": "./src/main.py",
       "toolName": "read_file",
-      "annotation": "Reading file 1 of 32..."
+      "annotation": "读取第 1 个文件，共 32 个..."
     },
     {
       "type": "tool_result",
       "content": "[... 450 lines of code ...]",
       "toolName": "read_file",
-      "annotation": "Large file content added to messages[]"
+      "annotation": "大文件内容已添加到 messages[]"
     },
     {
       "type": "system_event",
       "content": "[ContextManager] Token count: 148,231 / 150,000 threshold\nTriggering 3-layer compression:\n  1. Drop tool_result content > 1000 chars -> replaced with summary\n  2. Merge sequential assistant turns\n  3. Summarize oldest 50% of conversation\nResult: 148,231 -> 42,087 tokens",
-      "annotation": "Compression fires automatically when approaching the limit"
+      "annotation": "压缩在接近限制时自动触发"
     },
     {
       "type": "assistant_text",
-      "content": "Continuing analysis with compressed context. Files 1-18 have been summarized, proceeding with remaining files.",
-      "annotation": "Forgetting old tool results enables infinite work -- the agent can process any number of files"
+      "content": "使用压缩后的上下文继续分析。文件 1-18 已总结，继续处理剩余文件。",
+      "annotation": "遗忘旧的 tool 结果使无限工作成为可能——agent 可以处理任意数量的文件"
     }
   ]
 }

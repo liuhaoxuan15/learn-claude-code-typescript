@@ -45,6 +45,7 @@ const MAX_LOC = Math.max(
 export function Timeline() {
   const t = useTranslations("timeline");
   const tv = useTranslations("version");
+  const tSession = useTranslations("sessions");
   const locale = useLocale();
 
   return (
@@ -114,14 +115,14 @@ export function Timeline() {
                   <div className="flex flex-wrap items-start gap-2">
                     <LayerBadge layer={meta.layer}>{versionId}</LayerBadge>
                     <span className="text-xs text-[var(--color-text-secondary)]">
-                      {meta.coreAddition}
+                      {tSession(versionId + "_coreAddition") || meta.coreAddition}
                     </span>
                   </div>
 
                   <h3 className="mt-2 text-base font-semibold sm:text-lg">
                     {meta.title}
                     <span className="ml-2 text-sm font-normal text-[var(--color-text-secondary)]">
-                      {meta.subtitle}
+                      {tSession(versionId + "_subtitle") || meta.subtitle}
                     </span>
                   </h3>
 
@@ -149,7 +150,7 @@ export function Timeline() {
                   {/* Key insight */}
                   {meta.keyInsight && (
                     <p className="mt-3 text-sm italic text-[var(--color-text-secondary)]">
-                      &ldquo;{meta.keyInsight}&rdquo;
+                      &ldquo;{tSession(versionId + "_keyInsight") || meta.keyInsight}&rdquo;
                     </p>
                   )}
 

@@ -22,11 +22,11 @@ interface StepInfo {
 }
 
 const TASKS: TaskNode[] = [
-  { id: "T1", label: "T1: Setup DB", x: 80, y: 160, deps: [] },
-  { id: "T2", label: "T2: API routes", x: 280, y: 80, deps: ["T1"] },
-  { id: "T3", label: "T3: Auth module", x: 280, y: 240, deps: ["T1"] },
-  { id: "T4", label: "T4: Integration", x: 480, y: 160, deps: ["T2", "T3"] },
-  { id: "T5", label: "T5: Deploy", x: 650, y: 160, deps: ["T4"] },
+  { id: "T1", label: "T1: 设置数据库", x: 80, y: 160, deps: [] },
+  { id: "T2", label: "T2: API 路由", x: 280, y: 80, deps: ["T1"] },
+  { id: "T3", label: "T3: 认证模块", x: 280, y: 240, deps: ["T1"] },
+  { id: "T4", label: "T4: 集成", x: 480, y: 160, deps: ["T2", "T3"] },
+  { id: "T5", label: "T5: 部署", x: 650, y: 160, deps: ["T4"] },
 ];
 
 const NODE_W = 140;
@@ -34,37 +34,37 @@ const NODE_H = 50;
 
 const STEP_INFO: StepInfo[] = [
   {
-    title: "File-Based Tasks",
+    title: "基于文件的任务",
     description:
-      "Tasks are stored in JSON files on disk. They survive context compaction -- unlike in-memory state.",
+      "任务存储在磁盘上的 JSON 文件中。它们在上下文压缩中存活 —— 不同于内存状态。",
   },
   {
-    title: "Start T1",
+    title: "启动 T1",
     description:
-      "Tasks without dependencies can start immediately. T1 has no blockers.",
+      "没有依赖的任务可以立即启动。T1 没有阻塞项。",
   },
   {
-    title: "T1 Complete",
-    description: "Completing T1 unblocks its dependents: T2 and T3.",
+    title: "T1 完成",
+    description: "完成 T1 解锁其依赖项: T2 和 T3。",
   },
   {
-    title: "Parallel Work",
+    title: "并行工作",
     description:
-      "T2 and T3 have no dependency on each other. Both can run simultaneously.",
+      "T2 和 T3 之间没有依赖。两者可以同时运行。",
   },
   {
-    title: "Partial Unblock",
+    title: "部分解锁",
     description:
-      "T4 depends on BOTH T2 and T3. It waits for all blockers to complete.",
+      "T4 依赖 T2 和 T3。它等待所有阻塞项完成。",
   },
   {
-    title: "Fully Unblocked",
-    description: "All blockers resolved. T4 can now proceed.",
+    title: "完全解锁",
+    description: "所有阻塞项已解决。T4 现在可以继续。",
   },
   {
-    title: "Graph Resolved",
+    title: "图已解析",
     description:
-      "The entire dependency graph is resolved. File-based persistence means this works across context compressions.",
+      "整个依赖图已解析。基于文件的持久化意味着这在上下文压缩中也能工作。",
   },
 ];
 
@@ -237,7 +237,7 @@ export default function TaskSystem({ title }: { title?: string }) {
   return (
     <section className="min-h-[500px] space-y-4">
       <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-        {title || "Task Dependency Graph"}
+        {title || "任务依赖图"}
       </h2>
 
       <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
@@ -413,7 +413,7 @@ export default function TaskSystem({ title }: { title?: string }) {
                 fontFamily="monospace"
                 fill={isDark ? "#f87171" : "#dc2626"}
               >
-                Blocked: waiting on T3
+                阻塞中: 等待 T3
               </text>
             </motion.g>
           )}
@@ -439,7 +439,7 @@ export default function TaskSystem({ title }: { title?: string }) {
               .tasks/tasks.json
             </span>
             <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
-              Persisted to disk -- survives context compaction
+              持久化到磁盘 —— 在上下文压缩中存活
             </span>
           </div>
           <motion.div
@@ -454,25 +454,25 @@ export default function TaskSystem({ title }: { title?: string }) {
           <div className="flex items-center gap-1.5">
             <div className="h-3 w-3 rounded bg-zinc-300 dark:bg-zinc-600" />
             <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
-              pending
+              待处理
             </span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="h-3 w-3 rounded bg-amber-400 dark:bg-amber-600" />
             <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
-              in_progress
+              进行中
             </span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="h-3 w-3 rounded bg-emerald-400 dark:bg-emerald-600" />
             <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
-              completed
+              已完成
             </span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="h-3 w-3 rounded bg-red-400 dark:bg-red-600" />
             <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
-              blocked
+              阻塞
             </span>
           </div>
         </div>
