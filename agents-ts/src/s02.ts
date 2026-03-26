@@ -30,6 +30,7 @@ config({ override: true });
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WORKDIR = path.resolve(__dirname, "..", "..");
+console.log('WORKDIR', WORKDIR)
 
 const client = new Anthropic({
   baseURL: process.env.ANTHROPIC_BASE_URL,

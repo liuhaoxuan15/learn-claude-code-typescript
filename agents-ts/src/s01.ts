@@ -33,6 +33,7 @@ config({ override: true });
 const client = new Anthropic({
   baseURL: process.env.ANTHROPIC_BASE_URL,
 });
+console.log(client)
 
 const MODEL = process.env.MODEL_ID || "claude-sonnet-4-6";
 
@@ -182,7 +183,6 @@ rl.on("line", async (line) => {
       }
     }
   }
-  console.log();
   rl.prompt();
 });
 
